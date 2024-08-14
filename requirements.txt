@@ -3,4 +3,3 @@ requests==2.31.0
 Pillow
 runpod
 boto3
-zli
