@@ -86,15 +86,27 @@ def resize_with_bleed(service_url, image_bytes, width, height, bleed):
         }
     }
 
-    # Send the request to the service
-    response = requests.post(service_url, json=payload)
+    # Run the request
+    endpoint = runpod.Endpoint("vdazldfyhyb2kr")
+    run_request = endpoint.run(payload)
 
-    # Check if the request was successful
-    if response.status_code == 200:
-        s3_link = response.json().get("s3_link")
-        if s3_link:
-            # Download the image from S3
-            resized_image, image_bytes = download_image(s3_link)
-            return resized_image, image_bytes
+    # Check the status of the request
+    status = run_request.status()
+    while status in ["IN_QUEUE", "IN_PROGRESS"]:
+        time.sleep(1)
+        status = run_request.status()
+
+    # Get the output
+    output = run_request.output()
+
+    # Assuming the output contains the image details
+    if 'image' in output and output['image'] is not None:
+        bucket_name = "readytoprint-images"
+        object_key = f"staging-upscaled-images/{filename}"
+        image = image_from_s3(bucket_name, object_key)
+        buffered = BytesIO()
+        image.save(buffered, format="PNG")
+        image_bytes = buffered.getvalue()
+        return image, image_bytes
     else:
-        return None, None
+        raise ValueError("Output does not contain a valid image URL")
