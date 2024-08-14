@@ -48,7 +48,7 @@ if service_choice == "Upscale Image":
                         st.image(upscaled_image, caption="Upscaled Image", use_column_width=True)
                         st.download_button(
                             label="Download Upscaled Image",
-                            data=img_bytes,
+                            data=upscaled_image,  # Use the byte data of the upscaled image here
                             file_name=s3_key.split("/")[-1],
                             mime="image/png"
                         )
