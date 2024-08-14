@@ -85,6 +85,7 @@ def resize_with_bleed(image_bytes, width, height, bleed):
             }
         }
     }
+    
 
     # Run the request
     endpoint = runpod.Endpoint("vdazldfyhyb2kr")
@@ -98,11 +99,12 @@ def resize_with_bleed(image_bytes, width, height, bleed):
 
     # Get the output
     output = run_request.output()
-
     # Assuming the output contains the image details
     if 'image' in output and output['image'] is not None:
         bucket_name = "readytoprint-images"
         object_key = f"staging-outpainted-images/{filename}"
+        print(output['image'])
+        print(object_key)
         image = image_from_s3(bucket_name, object_key)
         buffered = BytesIO()
         image.save(buffered, format="PNG")
