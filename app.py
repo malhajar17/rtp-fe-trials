@@ -78,23 +78,19 @@ elif service_choice == "Resize with Bleed":
 
         if st.sidebar.button("Process Image"):
             with st.spinner("Resizing your image with bleed..."):
-                s3_link = resize_with_bleed(const.RESIZE_WITH_BLEED_SERVICE_URL, img_bytes, width, height, bleed)
+                try:
+                    resized_image, image_bytes = resize_with_bleed(const.RESIZE_WITH_BLEED_SERVICE_URL, img_bytes, width, height, bleed)
 
-            if s3_link:
-                resized_image, image_bytes = download_image(s3_link)
-
-                if resized_image:
-                    st.success("Image resized with bleed successfully!")
-                    st.image(resized_image, caption="Resized Image", use_column_width=True)
-                    st.download_button(
-                        label="Download Resized Image",
-                        data=image_bytes,
-                        file_name=s3_link.split("/")[-1],
-                        mime="image/png"
-                    )
-                else:
-                    st.error("Could not download the image.")
-            else:
-                st.error("Error in resizing the image.")
-    else:
-        st.info("Please upload an image to get started.")
+                    if resized_image:
+                        st.success("Image resized with bleed successfully!")
+                        st.image(resized_image, caption="Resized Image", use_column_width=True)
+                        st.download_button(
+                            label="Download Resized Image",
+                            data=image_bytes,  # Correctly use the byte data of the resized image
+                            file_name="resized_image.png",
+                            mime="image/png"
+                        )
+                    else:
+                        st.error("Could not download the image.")
+                except ValueError as e:
+                    st.error(f"Error: {str(e)}")

@@ -29,7 +29,8 @@ def upscale_image(service_url, image_bytes, upscale_factor):
             "model_params": {
                 "upscale_factor": upscale_factor,
                 "aws_save_name": filename
-            }
+            },
+            
         }
     }
 
@@ -62,14 +63,38 @@ def download_image(s3_link):
     else:
         return None, None
 
+
 def resize_with_bleed(service_url, image_bytes, width, height, bleed):
-    response = requests.post(
-        service_url,
-        files={"file": image_bytes},
-        data={"width": width, "height": height, "bleed": bleed},
-    )
-    
+    # Convert image bytes to a base64 string
+    base64_image = base64.b64encode(image_bytes).decode('utf-8')
+
+    # Get the current timestamp and format the filename
+    timestamp = datetime.now().strftime("%Y%m%d%H%M%S")
+    filename = f"{timestamp}_outpainted_image.png"
+
+    # Define the payload for resizing with bleed
+    payload = {
+        "input": {
+            "base64_image": base64_image,
+            "type": "outpaint",
+            "model_params": {
+                "target_resolution": [width, height],
+                "bleed_size_w": bleed,
+                "bleed_size_h": bleed,
+                "aws_save_name": filename
+            }
+        }
+    }
+
+    # Send the request to the service
+    response = requests.post(service_url, json=payload)
+
+    # Check if the request was successful
     if response.status_code == 200:
-        return response.json().get("s3_link")
+        s3_link = response.json().get("s3_link")
+        if s3_link:
+            # Download the image from S3
+            resized_image, image_bytes = download_image(s3_link)
+            return resized_image, image_bytes
     else:
-        return None
+        return None, None
