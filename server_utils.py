@@ -64,7 +64,7 @@ def download_image(s3_link):
         return None, None
 
 
-def resize_with_bleed(service_url, image_bytes, width, height, bleed):
+def resize_with_bleed(image_bytes, width, height, bleed):
     # Convert image bytes to a base64 string
     base64_image = base64.b64encode(image_bytes).decode('utf-8')
 

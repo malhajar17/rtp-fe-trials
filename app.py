@@ -79,7 +79,7 @@ elif service_choice == "Resize with Bleed":
         if st.sidebar.button("Process Image"):
             with st.spinner("Resizing your image with bleed..."):
                 try:
-                    resized_image, image_bytes = resize_with_bleed(const.RESIZE_WITH_BLEED_SERVICE_URL, img_bytes, width, height, bleed)
+                    resized_image, image_bytes = resize_with_bleed(img_bytes, width, height, bleed)
 
                     if resized_image:
                         st.success("Image resized with bleed successfully!")
