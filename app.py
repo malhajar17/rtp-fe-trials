@@ -2,6 +2,7 @@ import streamlit as st
 from server_utils import upscale_image, download_image, resize_with_bleed
 import elements as ui
 import constants as const
+from io import BytesIO
 
 # Streamlit page configuration
 st.set_page_config(
@@ -43,6 +44,10 @@ if service_choice == "Upscale Image":
                 try:
                     upscaled_image, s3_key = upscale_image(const.UPSCALE_SERVICE_URL, img_bytes, upscale_factor)
 
+                    # Convert PIL image to bytes
+                    buffered = BytesIO()
+                    upscaled_image.save(buffered, format="PNG")
+                    image_bytes = buffered.getvalue()
                     if upscaled_image:
                         st.success("Image upscaled successfully!")
                         st.image(upscaled_image, caption="Upscaled Image", use_column_width=True)
