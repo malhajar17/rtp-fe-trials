@@ -1,0 +1,80 @@
+/* Global styles */
+body {
+    background-color: #f4f4f4;
+    color: #333;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
+
+/* Sidebar styles */
+.sidebar .sidebar-content {
+    background-color: #ffffff;
+    padding: 20px;
+    border-right: 1px solid #ddd;
+}
+
+.sidebar .stButton button {
+    background-color: #007BFF;
+    color: #fff;
+    border-radius: 5px;
+    padding: 8px 16px;
+    border: none;
+}
+
+.sidebar .stButton button:hover {
+    background-color: #0056b3;
+    color: #fff;
+}
+
+/* Main content styles */
+.stTitle {
+    font-size: 24px;
+    color: #444;
+    margin-bottom: 10px;
+}
+
+.stSubheader {
+    font-size: 18px;
+    color: #666;
+    margin-bottom: 20px;
+}
+
+.stImage {
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    margin-bottom: 20px;
+}
+
+.stSuccess {
+    color: #28a745;
+}
+
+.stError {
+    color: #dc3545;
+}
+
+.stDownloadButton button {
+    background-color: #28a745;
+    color: #fff;
+    border-radius: 5px;
+    padding: 8px 16px;
+    border: none;
+}
+
+.stDownloadButton button:hover {
+    background-color: #218838;
+    color: #fff;
+}
+
+/* Info, Spinner, and other elements */
+.stInfo {
+    background-color: #e9ecef;
+    color: #333;
+    border-left: 5px solid #17a2b8;
+    padding: 10px;
+    border-radius: 5px;
+}
+
+.stSpinner {
+    font-size: 16px;
+    color: #007BFF;
+}
