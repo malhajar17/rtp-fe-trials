@@ -1,5 +1,5 @@
 import streamlit as st
-from server_utils import upscale_image, download_image, resize_with_bleed
+from server_utils import remove_background, upscale_image, download_image, resize_with_bleed
 import elements as ui
 import constants as const
 from io import BytesIO
@@ -25,7 +25,7 @@ st.sidebar.title("Image Processing Controls")
 uploaded_file = st.sidebar.file_uploader("Choose an image...", ["jpg", "png", "jpeg"])
 
 # Select service: Upscale or Resize with Bleed
-service_choice = st.sidebar.radio("Choose a service", ["Upscale Image", "Resize with Bleed"])
+service_choice = st.sidebar.radio("Choose a service", ["Upscale Image", "Resize with Bleed", "Remove Background"])
 
 if service_choice == "Upscale Image":
     upscale_factor = st.sidebar.slider("Upscale Factor", const.MIN_UPSCALE_FACTOR, const.MAX_UPSCALE_FACTOR, const.DEFAULT_UPSCALE_FACTOR)
