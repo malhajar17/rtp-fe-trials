@@ -122,13 +122,15 @@ def remove_background(image_bytes):
     timestamp = datetime.now().strftime("%Y%m%d%H%M%S")
     filename = f"{timestamp}_bg_removed_image.png"
 
-    # Define the payload for background removal
+
     payload = {
-        "input": {
-            "base64_image": base64_image,
-            "type": "remove_bg",
-            "aws_save_name": filename
-        }
+            "input": {
+                "base64_image": base64_image,
+                "type": "remove_bg",
+                "model_params": {
+                    "aws_save_name": filename
+                }
+            }
     }
 
     # Run the request
