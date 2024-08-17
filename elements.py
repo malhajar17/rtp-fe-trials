@@ -53,7 +53,7 @@ def download_button(label, data, file_name, mime):
     """Function to create a download button."""
     st.download_button(label=label, data=data, file_name=file_name, mime=mime)
 
-def create_checkerboard(width, height, tile_size=10):
+def create_checkerboard(width, height, tile_size=30):
     """Create a checkerboard pattern image."""
     checkerboard = Image.new('RGB', (width, height), color=(255, 255, 255))
     draw = ImageDraw.Draw(checkerboard)
