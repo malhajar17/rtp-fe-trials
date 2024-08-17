@@ -151,6 +151,9 @@ def remove_background(image_bytes):
         bucket_name = "readytoprint-images"
         object_key = f"removed-bg-images/{filename}"
         image = image_from_s3(bucket_name, object_key)
+        buffered = BytesIO()
+        image.save(buffered, format="PNG")
+        image_bytes = buffered.getvalue()
         return image, object_key
 
     else:
