@@ -147,7 +147,7 @@ def remove_background(image_bytes):
     # Assuming the output contains the image details
     if 'image' in output and output['image'] is not None:
         bucket_name = "readytoprint-images"
-        object_key = f"staging-bg-removed-images/{filename}"
+        object_key = f"removed-bg-images/{filename}"
         image = image_from_s3(bucket_name, object_key)
         return image, object_key
 
