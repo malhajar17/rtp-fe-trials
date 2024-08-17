@@ -94,3 +94,31 @@ elif service_choice == "Resize with Bleed":
                         st.error("Could not download the image.")
                 except ValueError as e:
                     st.error(f"Error: {str(e)}")
+
+elif service_choice == "Remove Background":
+    st.title("Background Remover")
+    st.subheader("Upload an image, and the app will remove its background.")
+
+    if uploaded_file is not None:
+        st.image(uploaded_file, caption="Original Image", use_column_width=True)
+
+        img_bytes = uploaded_file.read()
+
+        if st.sidebar.button("Process Image"):
+            with st.spinner("Removing the background..."):
+                try:
+                    bg_removed_image, image_bytes = remove_background(img_bytes)
+
+                    if bg_removed_image:
+                        st.success("Background removed successfully!")
+                        st.image(bg_removed_image, caption="Background Removed Image", use_column_width=True)
+                        st.download_button(
+                            label="Download Image with Background Removed",
+                            data=image_bytes,
+                            file_name="bg_removed_image.png",
+                            mime="image/png"
+                        )
+                    else:
+                        st.error("Could not download the image.")
+                except ValueError as e:
+                    st.error(f"Error: {str(e)}")

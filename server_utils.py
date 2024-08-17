@@ -112,3 +112,45 @@ def resize_with_bleed(image_bytes, width, height, bleed):
         return image, image_bytes
     else:
         raise ValueError("Output does not contain a valid image URL")
+
+def remove_background(image_bytes):
+    # Convert image bytes to a base64 string
+    base64_image = base64.b64encode(image_bytes).decode('utf-8')
+
+    # Get the current timestamp and format the filename
+    timestamp = datetime.now().strftime("%Y%m%d%H%M%S")
+    filename = f"{timestamp}_bg_removed_image.png"
+
+    # Define the payload for background removal
+    payload = {
+        "input": {
+            "base64_image": base64_image,
+            "type": "remove_bg",
+            "aws_save_name": filename
+        }
+    }
+
+    # Run the request
+    endpoint = runpod.Endpoint("vdazldfyhyb2kr")
+    run_request = endpoint.run(payload)
+
+    # Check the status of the request
+    status = run_request.status()
+    while status in ["IN_QUEUE", "IN_PROGRESS"]:
+        time.sleep(1)
+        status = run_request.status()
+
+    # Get the output
+    output = run_request.output()
+
+    # Assuming the output contains the image details
+    if 'image' in output and output['image'] is not None:
+        bucket_name = "readytoprint-images"
+        object_key = f"staging-bg-removed-images/{filename}"
+        image = image_from_s3(bucket_name, object_key)
+        buffered = BytesIO()
+        image.save(buffered, format="PNG")
+        image_bytes = buffered.getvalue()
+        return image, image_bytes
+    else:
+        raise ValueError("Output does not contain a valid image URL")
