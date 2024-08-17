@@ -1,4 +1,5 @@
 import streamlit as st
+from PIL import Image, ImageDraw
 
 def sidebar_title(title):
     """Function to display the sidebar title."""
@@ -51,3 +52,21 @@ def display_info_message(message):
 def download_button(label, data, file_name, mime):
     """Function to create a download button."""
     st.download_button(label=label, data=data, file_name=file_name, mime=mime)
+
+def create_checkerboard(width, height, tile_size=10):
+    """Create a checkerboard pattern image."""
+    checkerboard = Image.new('RGB', (width, height), color=(255, 255, 255))
+    draw = ImageDraw.Draw(checkerboard)
+
+    num_tiles_x = width // tile_size
+    num_tiles_y = height // tile_size
+
+    for y in range(num_tiles_y):
+        for x in range(num_tiles_x):
+            if (x + y) % 2 == 0:
+                draw.rectangle(
+                    [x * tile_size, y * tile_size, (x + 1) * tile_size, (y + 1) * tile_size],
+                    fill=(192, 192, 192)
+                )
+
+    return checkerboard

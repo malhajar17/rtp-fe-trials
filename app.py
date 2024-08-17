@@ -111,20 +111,21 @@ elif service_choice == "Remove Background":
             with st.spinner("Removing the background..."):
                 try:
                     bg_removed_image, image_bytes = remove_background(img_bytes)
-                    # Convert PIL image to bytes
-                    buffered = BytesIO()
-                    bg_removed_image.save(buffered, format="PNG")
-                    image_bytes = buffered.getvalue()
-                    if bg_removed_image:
-                        st.success("Background removed successfully!")
-                        st.image(bg_removed_image, caption="Background Removed Image", use_column_width=True)
-                        st.download_button(
-                            label="Download Image with Background Removed",
-                            data=image_bytes,
-                            file_name="bg_removed_image.png",
-                            mime="image/png"
-                        )
-                    else:
-                        st.error("Could not download the image.")
+                    
+                    # Create checkerboard background
+                    width, height = bg_removed_image.size
+                    checkerboard = ui.create_checkerboard(width, height)
+
+                    # Overlay the image onto the checkerboard
+                    checkerboard.paste(bg_removed_image, (0, 0), bg_removed_image)
+
+                    st.success("Background removed successfully!")
+                    st.image(checkerboard, caption="Background Removed Image", use_column_width=True)
+                    st.download_button(
+                        label="Download Image with Background Removed",
+                        data=image_bytes,
+                        file_name="bg_removed_image.png",
+                        mime="image/png"
+                    )
                 except ValueError as e:
                     st.error(f"Error: {str(e)}")
