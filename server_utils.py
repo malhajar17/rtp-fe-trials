@@ -55,6 +55,7 @@ def upscale_image(service_url, image_bytes, upscale_factor):
         return image, object_key
     else:
         raise ValueError("Output does not contain a valid image URL")
+    
 def download_image(s3_link):
     s3_response = requests.get(s3_link)
     
@@ -148,9 +149,7 @@ def remove_background(image_bytes):
         bucket_name = "readytoprint-images"
         object_key = f"staging-bg-removed-images/{filename}"
         image = image_from_s3(bucket_name, object_key)
-        buffered = BytesIO()
-        image.save(buffered, format="PNG")
-        image_bytes = buffered.getvalue()
-        return image, image_bytes
+        return image, object_key
+
     else:
         raise ValueError("Output does not contain a valid image URL")
