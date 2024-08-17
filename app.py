@@ -80,7 +80,10 @@ elif service_choice == "Resize with Bleed":
             with st.spinner("Resizing your image with bleed..."):
                 try:
                     resized_image, image_bytes = resize_with_bleed(img_bytes, width, height, bleed)
-
+                    # Convert PIL image to bytes
+                    buffered = BytesIO()
+                    resized_image.save(buffered, format="PNG")
+                    image_bytes = buffered.getvalue()
                     if resized_image:
                         st.success("Image resized with bleed successfully!")
                         st.image(resized_image, caption="Resized Image", use_column_width=True)
@@ -108,7 +111,10 @@ elif service_choice == "Remove Background":
             with st.spinner("Removing the background..."):
                 try:
                     bg_removed_image, image_bytes = remove_background(img_bytes)
-
+                    # Convert PIL image to bytes
+                    buffered = BytesIO()
+                    bg_removed_image.save(buffered, format="PNG")
+                    image_bytes = buffered.getvalue()
                     if bg_removed_image:
                         st.success("Background removed successfully!")
                         st.image(bg_removed_image, caption="Background Removed Image", use_column_width=True)
