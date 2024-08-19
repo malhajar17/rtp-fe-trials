@@ -63,34 +63,40 @@ if service_choice == "Upscale Image":
                     st.error(f"Error: {str(e)}")
 
 elif service_choice == "Resize with Bleed":
-    # Initial base dimensions in millimeters (mm)
-    default_width_mm = 100  # Default width in mm
-    default_height_mm = 150  # Default height in mm
-    default_bleed_mm = 5  # Default bleed in mm
+    # Initially, set the base dimensions from the uploaded image size (assuming you know these)
+    if uploaded_file is not None:
+        # Assuming these are the dimensions in mm from the image metadata or another source
+        image_metadata = st.image(uploaded_file, caption="Original Image", use_column_width=True)
+        initial_width_mm = 100  # Replace with actual image width in mm
+        initial_height_mm = 150  # Replace with actual image height in mm
+    else:
+        initial_width_mm = 100  # Default if no image is uploaded yet
+        initial_height_mm = 150  # Default if no image is uploaded yet
 
-    base_width_mm = st.sidebar.number_input("Base Width (mm)", const.MIN_DIMENSION, value=default_width_mm)
-    base_height_mm = st.sidebar.number_input("Base Height (mm)", const.MIN_DIMENSION, value=default_height_mm)
-    bleed_mm = st.sidebar.slider("Bleed Margin (mm)", 0, const.MAX_BLEED_MARGIN, default_bleed_mm)
+    # Bleed slider and calculation
+    bleed_mm = st.sidebar.slider("Bleed Margin (mm)", 0, const.MAX_BLEED_MARGIN, 0)
 
-    # Calculating final dimensions including bleed
-    final_width_mm = base_width_mm + 2 * bleed_mm
-    final_height_mm = base_height_mm + 2 * bleed_mm
+    # Adjust base dimensions based on the bleed
+    base_width_mm = initial_width_mm + 2 * bleed_mm
+    base_height_mm = initial_height_mm + 2 * bleed_mm
 
-    st.sidebar.info(f"Final dimensions with bleed: {final_width_mm} mm x {final_height_mm} mm")
+    # Display the base dimensions reflecting the bleed
+    st.sidebar.number_input("Base Width (mm)", value=base_width_mm, disabled=True)
+    st.sidebar.number_input("Base Height (mm)", value=base_height_mm, disabled=True)
+
+    st.sidebar.info(f"Final dimensions with bleed: {base_width_mm} mm x {base_height_mm} mm")
 
     st.title("Image Resize with Bleed")
     st.subheader("Upload an image and specify the base dimensions and bleed margin. The app will resize your image and add the bleed.")
 
     if uploaded_file is not None:
-        st.image(uploaded_file, caption="Original Image", use_column_width=True)
-
         img_bytes = uploaded_file.read()
 
         if st.sidebar.button("Process Image"):
             with st.spinner("Resizing your image with bleed..."):
                 try:
-                    # Use the final dimensions for the resize function
-                    resized_image, image_bytes = resize_with_bleed(img_bytes, final_width_mm, final_height_mm, bleed_mm)
+                    # Use the adjusted dimensions for the resize function
+                    resized_image, image_bytes = resize_with_bleed(img_bytes, base_width_mm, base_height_mm, bleed_mm)
                     # Convert PIL image to bytes
                     buffered = BytesIO()
                     resized_image.save(buffered, format="PNG")
