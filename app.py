@@ -53,7 +53,7 @@ if service_choice == "Upscale Image":
                         st.image(upscaled_image, caption="Upscaled Image", use_column_width=True)
                         st.download_button(
                             label="Download Upscaled Image",
-                            data=image_bytes,  # Use the byte data of the upscaled image here
+                            data=image_bytes,
                             file_name=s3_key.split("/")[-1],
                             mime="image/png"
                         )
@@ -63,13 +63,19 @@ if service_choice == "Upscale Image":
                     st.error(f"Error: {str(e)}")
 
 elif service_choice == "Resize with Bleed":
-    width = st.sidebar.number_input("Target Width (px)", const.MIN_DIMENSION)
-    height = st.sidebar.number_input("Target Height (px)", const.MIN_DIMENSION)
-    bleed = st.sidebar.slider("Bleed Margin (px)", 0, const.MAX_BLEED_MARGIN, const.DEFAULT_BLEED_MARGIN)
-    st.sidebar.info("Specify the target dimensions and bleed margin.")
+    # Initial base dimensions in millimeters (mm)
+    base_width_mm = st.sidebar.number_input("Base Width (mm)", const.MIN_DIMENSION)
+    base_height_mm = st.sidebar.number_input("Base Height (mm)", const.MIN_DIMENSION)
+    bleed_mm = st.sidebar.slider("Bleed Margin (mm)", 0, const.MAX_BLEED_MARGIN, const.DEFAULT_BLEED_MARGIN)
+
+    # Calculating final dimensions including bleed
+    final_width_mm = base_width_mm + 2 * bleed_mm
+    final_height_mm = base_height_mm + 2 * bleed_mm
+
+    st.sidebar.info(f"Final dimensions with bleed: {final_width_mm} mm x {final_height_mm} mm")
 
     st.title("Image Resize with Bleed")
-    st.subheader("Upload an image and specify the target dimensions and bleed margin. The app will resize your image and add the bleed.")
+    st.subheader("Upload an image and specify the base dimensions and bleed margin. The app will resize your image and add the bleed.")
 
     if uploaded_file is not None:
         st.image(uploaded_file, caption="Original Image", use_column_width=True)
@@ -79,7 +85,8 @@ elif service_choice == "Resize with Bleed":
         if st.sidebar.button("Process Image"):
             with st.spinner("Resizing your image with bleed..."):
                 try:
-                    resized_image, image_bytes = resize_with_bleed(img_bytes, width, height, bleed)
+                    # Use the final dimensions for the resize function
+                    resized_image, image_bytes = resize_with_bleed(img_bytes, final_width_mm, final_height_mm, bleed_mm)
                     # Convert PIL image to bytes
                     buffered = BytesIO()
                     resized_image.save(buffered, format="PNG")
@@ -89,7 +96,7 @@ elif service_choice == "Resize with Bleed":
                         st.image(resized_image, caption="Resized Image", use_column_width=True)
                         st.download_button(
                             label="Download Resized Image",
-                            data=image_bytes,  # Correctly use the byte data of the resized image
+                            data=image_bytes,
                             file_name="resized_image.png",
                             mime="image/png"
                         )
@@ -111,9 +118,7 @@ elif service_choice == "Remove Background":
             with st.spinner("Removing the background..."):
                 try:
                     bg_removed_image, image_bytes = remove_background(img_bytes)
-                    buffered = BytesIO()
-                    bg_removed_image.save(buffered, format="PNG")
-                    image_bytes = buffered.getvalue()
+                    
                     # Create checkerboard background
                     width, height = bg_removed_image.size
                     checkerboard = ui.create_checkerboard(width, height)
