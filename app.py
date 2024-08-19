@@ -111,7 +111,9 @@ elif service_choice == "Remove Background":
             with st.spinner("Removing the background..."):
                 try:
                     bg_removed_image, image_bytes = remove_background(img_bytes)
-                    
+                    buffered = BytesIO()
+                    bg_removed_image.save(buffered, format="PNG")
+                    image_bytes = buffered.getvalue()
                     # Create checkerboard background
                     width, height = bg_removed_image.size
                     checkerboard = ui.create_checkerboard(width, height)
