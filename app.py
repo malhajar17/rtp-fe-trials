@@ -64,9 +64,13 @@ if service_choice == "Upscale Image":
 
 elif service_choice == "Resize with Bleed":
     # Initial base dimensions in millimeters (mm)
-    base_width_mm = st.sidebar.number_input("Base Width (mm)", const.MIN_DIMENSION)
-    base_height_mm = st.sidebar.number_input("Base Height (mm)", const.MIN_DIMENSION)
-    bleed_mm = st.sidebar.slider("Bleed Margin (mm)", 0, const.MAX_BLEED_MARGIN, const.DEFAULT_BLEED_MARGIN)
+    default_width_mm = 100  # Default width in mm
+    default_height_mm = 150  # Default height in mm
+    default_bleed_mm = 5  # Default bleed in mm
+
+    base_width_mm = st.sidebar.number_input("Base Width (mm)", const.MIN_DIMENSION, value=default_width_mm)
+    base_height_mm = st.sidebar.number_input("Base Height (mm)", const.MIN_DIMENSION, value=default_height_mm)
+    bleed_mm = st.sidebar.slider("Bleed Margin (mm)", 0, const.MAX_BLEED_MARGIN, default_bleed_mm)
 
     # Calculating final dimensions including bleed
     final_width_mm = base_width_mm + 2 * bleed_mm
