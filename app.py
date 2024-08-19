@@ -3,6 +3,7 @@ from server_utils import remove_background, upscale_image, download_image, resiz
 import elements as ui
 import constants as const
 from io import BytesIO
+import utils  # Import the utils module
 
 # Streamlit page configuration
 st.set_page_config(
@@ -63,14 +64,8 @@ if service_choice == "Upscale Image":
                     st.error(f"Error: {str(e)}")
 
 elif service_choice == "Resize with Bleed":
-    # Initially, set the base dimensions from the uploaded image size (assuming you know these)
-    if uploaded_file is not None:
-        # Assuming these are the dimensions in mm from the image metadata or another source
-        initial_width_mm = 100  # Replace with actual image width in mm
-        initial_height_mm = 150  # Replace with actual image height in mm
-    else:
-        initial_width_mm = 100  # Default if no image is uploaded yet
-        initial_height_mm = 150  # Default if no image is uploaded yet
+    # Get initial dimensions from the image or use defaults
+    initial_width_mm, initial_height_mm = utils.get_initial_dimensions(uploaded_file)
 
     # Select how to adjust dimensions
     adjustment_method = st.sidebar.radio("Adjust Dimensions by", ["Bleed", "Base Dimensions"])
@@ -80,8 +75,7 @@ elif service_choice == "Resize with Bleed":
         bleed_mm = st.sidebar.slider("Bleed Margin (mm)", 0, const.MAX_BLEED_MARGIN, 0)
         
         # Adjust base dimensions based on the bleed
-        base_width_mm = initial_width_mm + 2 * bleed_mm
-        base_height_mm = initial_height_mm + 2 * bleed_mm
+        base_width_mm, base_height_mm = utils.calculate_dimensions_with_bleed(initial_width_mm, initial_height_mm, bleed_mm)
         
     else:
         # Base dimensions input
@@ -89,7 +83,7 @@ elif service_choice == "Resize with Bleed":
         base_height_mm = st.sidebar.number_input("Base Height (mm)", const.MIN_DIMENSION, value=initial_height_mm)
 
         # Calculate the bleed based on the difference between the new dimensions and the initial dimensions
-        bleed_mm = max((base_width_mm - initial_width_mm) / 2, (base_height_mm - initial_height_mm) / 2)
+        bleed_mm = utils.calculate_bleed_from_dimensions(initial_width_mm, initial_height_mm, base_width_mm, base_height_mm)
 
     # Display the final bleed and dimensions
     st.sidebar.info(f"Bleed: {bleed_mm:.2f} mm")
