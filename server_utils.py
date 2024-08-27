@@ -158,3 +158,46 @@ def remove_background(image_bytes):
 
     else:
         raise ValueError("Output does not contain a valid image URL")
+
+
+def generate_flyer_image(prompt):
+    # Get the current timestamp and format the filename
+    timestamp = datetime.now().strftime("%Y%m%d%H%M%S")
+    filename = f"{timestamp}_generated_flyer.png"
+
+    # Define a dummy image URL (since the image_url is not used but required)
+    dummy_image_url = "https://cdn-avatars.huggingface.co/v1/production/uploads/639c5c448a34ed9a404a956b/jcypw-eh7JzKHTffd0N9l.jpeg"
+
+    # Define the payload for generating the flyer
+    payload = {
+        "input": {
+            "image_url": dummy_image_url,  # This is just a placeholder
+            "type": "generate",
+            "model_params": {
+                "flux_prompt": prompt,
+                "aws_save_name": filename
+            }
+        }
+    }
+
+    # Run the request
+    endpoint = runpod.Endpoint("vdazldfyhyb2kr")
+    run_request = endpoint.run(payload)
+
+    # Check the status of the request
+    status = run_request.status()
+    while status in ["IN_QUEUE", "IN_PROGRESS"]:
+        time.sleep(1)
+        status = run_request.status()
+
+    # Get the output
+    output = run_request.output()
+
+    # Assuming the output contains the image details
+    if 'image' in output and output['image'] is not None:
+        bucket_name = "readytoprint-images"
+        object_key = f"generated-images/{filename}"
+        image = image_from_s3(bucket_name, object_key)
+        return image, object_key
+    else:
+        raise ValueError("Output does not contain a valid image URL")
