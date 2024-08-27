@@ -26,7 +26,7 @@ st.sidebar.title("Image Processing Controls")
 uploaded_file = st.sidebar.file_uploader("Choose an image...", ["jpg", "png", "jpeg"])
 
 # Select service: Upscale or Resize with Bleed
-service_choice = st.sidebar.radio("Choose a service", ["Upscale Image", "Resize with Bleed", "Remove Background"])
+service_choice = st.sidebar.radio("Choose a service", ["Upscale Image", "Resize with Bleed", "Remove Background","Generate Flyer"])
 
 if service_choice == "Upscale Image":
     upscale_factor = st.sidebar.slider("Upscale Factor", const.MIN_UPSCALE_FACTOR, const.MAX_UPSCALE_FACTOR, const.DEFAULT_UPSCALE_FACTOR)
