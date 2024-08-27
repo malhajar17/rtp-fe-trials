@@ -168,7 +168,7 @@ elif service_choice == "Generate Flyer":
                     # Combine the text and design instructions into one prompt
                     flyer_prompt = f"Design a flyer with the following text: '{flyer_text}'. Design instructions: {flyer_design}."
 
-                    flyer_image, s3_key = generate_flyer_image(const.FLYER_GENERATION_URL, flyer_prompt)
+                    flyer_image, s3_key = generate_flyer_image(flyer_prompt)
 
                     # Convert PIL image to bytes
                     buffered = BytesIO()
