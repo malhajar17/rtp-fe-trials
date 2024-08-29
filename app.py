@@ -74,30 +74,23 @@ elif service_choice == "Resize with Bleed":
         base_width_mm = st.sidebar.number_input("Base Width (mm)", const.MIN_DIMENSION, value=initial_width_mm)
         base_height_mm = st.sidebar.number_input("Base Height (mm)", const.MIN_DIMENSION, value=initial_height_mm)
 
-        # Separate bleed width and height inputs
-        bleed_w_mm = st.sidebar.number_input("Bleed Width (mm)", 0, 10, 3)
-        bleed_h_mm = st.sidebar.number_input("Bleed Height (mm)", 0, 10, 3)
-
-        # Display the final bleed and dimensions
-        st.sidebar.info(f"Final dimensions with bleed: {base_width_mm + 2 * bleed_w_mm} mm x {base_height_mm + 2 * bleed_h_mm} mm")
-
-        st.title("Image Resize with Custom Dimensions and Bleed")
-        st.subheader("Upload an image and specify the base dimensions and bleed margin. The app will resize your image and add the bleed.")
+        st.title("Image Resize with Custom Dimensions")
+        st.subheader("Upload an image and specify the base dimensions. The app will resize your image accordingly.")
 
         if uploaded_file is not None:
             img_bytes = uploaded_file.read()
 
             if st.sidebar.button("Process Image"):
-                with st.spinner("Resizing your image with bleed..."):
+                with st.spinner("Resizing your image..."):
                     try:
-                        # Use the adjusted dimensions for the resize function
-                        resized_image, image_bytes = resize_with_bleed(img_bytes, base_width_mm, base_height_mm, bleed_w_mm, bleed_h_mm)
+                        # Use the specified dimensions for the resize function without applying bleed
+                        resized_image, image_bytes = resize_with_bleed(img_bytes, base_width_mm, base_height_mm, 0, 0)
                         # Convert PIL image to bytes
                         buffered = BytesIO()
                         resized_image.save(buffered, format="PNG")
                         image_bytes = buffered.getvalue()
                         if resized_image:
-                            st.success("Image resized with bleed successfully!")
+                            st.success("Image resized successfully!")
                             st.image(resized_image, caption="Resized Image", use_column_width=True)
                             st.download_button(
                                 label="Download Resized Image",
@@ -109,7 +102,7 @@ elif service_choice == "Resize with Bleed":
                             st.error("Could not download the image.")
                     except ValueError as e:
                         st.error(f"Error: {str(e)}")
-
+                        
     elif resize_type == "Standard Resize":
         # Select orientation first
         orientation = st.sidebar.radio("Choose orientation", ["Portrait", "Paysage"])
