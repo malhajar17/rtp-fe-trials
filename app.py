@@ -72,7 +72,7 @@ elif service_choice == "Resize with Bleed":
         st.subheader("Upload an image and specify the base dimensions. The app will resize your image accordingly.")
 
         # Get initial dimensions from the image or use defaults
-        initial_width_mm, initial_height_mm = img_utils.get_initial_dimensions(uploaded_file)
+        initial_width_mm, initial_height_mm = img_utils.get_initial_dimensions(uploaded_file.read())
 
         # Base dimensions input by user
         base_width_mm = st.sidebar.number_input("Base Width (mm)", min_value=float(const.MIN_DIMENSION), value=float(initial_width_mm), step=1.0)
@@ -102,9 +102,9 @@ elif service_choice == "Resize with Bleed":
         dimensions, bleed_dimensions = const.FORMATS.get(format_choice)
         format_width_mm = bleed_dimensions[0]
         format_height_mm = bleed_dimensions[1]
-        initial_width_mm, initial_height_mm = img_utils.get_initial_dimensions(uploaded_file)  
+
         st.sidebar.info(f"Selected Format: {format_choice}")
-        st.sidebar.info(f"Original Image dimensions: {round(initial_width_mm)} mm x {round(initial_height_mm)} mm")
+        st.sidebar.info(f"Base dimensions: {dimensions[0]} mm x {dimensions[1]} mm")
         st.sidebar.info(f"Final dimensions with Bleed: {format_width_mm} mm x {format_height_mm} mm")
 
         if uploaded_file is not None:
@@ -112,8 +112,8 @@ elif service_choice == "Resize with Bleed":
 
             if st.sidebar.button("Process Image"):
                 with st.spinner("Processing your image..."):
-                    img_utils.process_and_display_image(uploaded_file, format_width_mm, format_height_mm)
-
+                    img_utils.process_and_display_image(img_bytes, format_width_mm, format_height_mm)
+                    
 elif service_choice == "Remove Background":
     st.title("Background Remover")
     st.subheader("Upload an image, and the app will remove its background.")
