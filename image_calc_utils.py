@@ -81,25 +81,31 @@ def process_image_larger_than_format(image_bytes, format_width_mm, format_height
             cropped_image.save(buffered, format="PNG", dpi=(300, 300))
             return cropped_image, buffered.getvalue()
         else:
-            # Resize slightly more to ensure there's space for outpainting/bleed
-            reduction_factor = 0.9  # 5% smaller
-            slightly_smaller_width = int(new_width * reduction_factor)
-            slightly_smaller_height = int(new_height * reduction_factor)
+            # Slightly reduce the image size to create space for bleed
+            reduction_factor = 0.9  # 2% smaller
+            target_width_px = int(format_width_px * reduction_factor)
+            target_height_px = int(format_height_px * reduction_factor)
 
-            image = image.resize((slightly_smaller_width, slightly_smaller_height), Image.LANCZOS)
-
-            # Calculate the gaps (difference between the resized image and the format)
-            diff_w = format_width_px - image.width
-            diff_h = format_height_px - image.height
+            # Downsize the image to slightly smaller than the format while maintaining aspect ratio
+            image.thumbnail((target_width_px, target_height_px), Image.LANCZOS)
 
             # Save the resized image to bytes
             buffered = io.BytesIO()
             image.save(buffered, format="PNG", dpi=(300, 300))
             resized_image_bytes = buffered.getvalue()
 
-            # Add bleed to fill the gap (outpaint)
+            # Reload the image from bytes to get accurate dimensions after resizing
+            with Image.open(io.BytesIO(resized_image_bytes)) as resized_image:
+                resized_width_px = resized_image.width
+                resized_height_px = resized_image.height
+
+            # Calculate the gaps (difference between the resized image and the format)
+            diff_w = format_width_px - resized_width_px
+            diff_h = format_height_px - resized_height_px
+
+            # Add bleed to fill the gap
             final_image, final_image_bytes = resize_with_bleed_server(
-                resized_image_bytes, image.width, image.height, diff_w / 2, diff_h / 2, resize_with_bleed_func
+                resized_image_bytes, resized_width_px, resized_height_px, diff_w / 2, diff_h / 2, resize_with_bleed_func
             )
             return final_image, final_image_bytes
         
