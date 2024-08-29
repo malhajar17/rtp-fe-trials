@@ -49,21 +49,21 @@ def process_image_larger_than_format(image_bytes, format_width_mm, format_height
             image = image.resize(image.size, resample=Image.LANCZOS)
             image.info['dpi'] = (300, 300)
 
-        original_width_mm, original_height_mm = get_initial_dimensions(image_bytes)
-
         # Convert format dimensions from mm to pixels
         format_width_px = int((format_width_mm / 25.4) * 300)
         format_height_px = int((format_height_mm / 25.4) * 300)
 
         if resize_option == "Crop Image":
-            # Resize to fill the format while maintaining aspect ratio, then crop to fit
+            # Resize the image so that the entire image fits within the format frame
             image.thumbnail((format_width_px, format_height_px), Image.LANCZOS)
 
             # Calculate cropping coordinates
             left = (image.width - format_width_px) / 2
             top = (image.height - format_height_px) / 2
-            right = (image.width + format_width_px) / 2
-            bottom = (image.height + format_height_px) / 2
+            right = left + format_width_px
+            bottom = top + format_height_px
+
+            # Crop the image to the exact format dimensions
             cropped_image = image.crop((left, top, right, bottom))
 
             # Save the cropped image to bytes
@@ -84,7 +84,7 @@ def process_image_larger_than_format(image_bytes, format_width_mm, format_height
             # Add bleed
             resized_image, image_bytes = resize_with_bleed_server(image_bytes, image.width, image.height, diff_w / 2, diff_h / 2, resize_with_bleed_func)
             return resized_image, image_bytes
-    
+        
 def process_and_display_image(img_bytes, width_mm, height_mm):
     """
     Handles the logic for processing the image based on the user-defined width and height.
@@ -96,7 +96,7 @@ def process_and_display_image(img_bytes, width_mm, height_mm):
         resized_image, image_bytes = img_utils.process_image_smaller_than_format(img_bytes, width_mm, height_mm, resize_with_bleed)
     else:
         # Image is larger than the format, give the user options
-        resize_option = st.sidebar.radio("Image is larger than specified dimensions. Choose an option:", ["Scale Down and Fill Bleed","Crop Image"])
+        resize_option = st.sidebar.radio("Image is larger than specified dimensions. Choose an option:", ["Crop Image","Scale Down and Fill Bleed"])
         resized_image, image_bytes = img_utils.process_image_larger_than_format(img_bytes, width_mm, height_mm, resize_option, resize_with_bleed)
 
     if resized_image:
