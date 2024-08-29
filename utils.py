@@ -38,16 +38,30 @@ def calculate_bleed_from_dimensions(initial_width_mm, initial_height_mm, base_wi
     # Return the larger bleed value to ensure the bleed is uniform around the image
     return max(bleed_width, bleed_height)
 
+
 def get_initial_dimensions(uploaded_file):
     """
     Get initial dimensions from the image metadata or use defaults.
     """
     if uploaded_file is not None:
-        # Assume we can get image dimensions from metadata (replace with actual metadata extraction)
-        initial_width_mm = 100  # Replace with actual image width in mm from metadata
-        initial_height_mm = 150  # Replace with actual image height in mm from metadata
+        # Open the image using PIL
+        image = Image.open(uploaded_file)
+        
+        # Get image dimensions in pixels
+        width_px, height_px = image.size
+        
+        # Attempt to retrieve DPI from image metadata, or assume 300 DPI if not available
+        dpi = image.info.get('dpi', (300, 300))
+        dpi_x, dpi_y = dpi
+        
+        # Convert dimensions from pixels to millimeters
+        # 1 inch = 25.4 mm
+        initial_width_mm = (width_px / dpi_x) * 25.4
+        initial_height_mm = (height_px / dpi_y) * 25.4
     else:
-        initial_width_mm = 100  # Default width in mm
-        initial_height_mm = 150  # Default height in mm
+        # Default dimensions in millimeters
+        initial_width_mm = 100  
+        initial_height_mm = 150  
     
     return initial_width_mm, initial_height_mm
+
