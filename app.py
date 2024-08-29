@@ -91,6 +91,7 @@ elif service_choice == "Resize with Bleed":
 
         # Select orientation first
         orientation = st.sidebar.radio("Choose orientation", ["Portrait", "Paysage"])
+        initial_width_mm, initial_height_mm = img_utils.get_initial_dimensions(uploaded_file.read())
 
         # Determine the list of available formats based on the orientation
         available_formats = [f for f in const.FORMATS.keys() if orientation.lower() in f]
@@ -104,7 +105,7 @@ elif service_choice == "Resize with Bleed":
         format_height_mm = bleed_dimensions[1]
 
         st.sidebar.info(f"Selected Format: {format_choice}")
-        st.sidebar.info(f"Base dimensions: {dimensions[0]} mm x {dimensions[1]} mm")
+        st.sidebar.info(f"Base dimensions: {initial_width_mm} mm x {initial_height_mm} mm")
         st.sidebar.info(f"Final dimensions with Bleed: {format_width_mm} mm x {format_height_mm} mm")
 
         if uploaded_file is not None:
@@ -113,7 +114,7 @@ elif service_choice == "Resize with Bleed":
             if st.sidebar.button("Process Image"):
                 with st.spinner("Processing your image..."):
                     img_utils.process_and_display_image(img_bytes, format_width_mm, format_height_mm)
-                    
+
 elif service_choice == "Remove Background":
     st.title("Background Remover")
     st.subheader("Upload an image, and the app will remove its background.")
