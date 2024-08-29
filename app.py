@@ -110,15 +110,15 @@ elif service_choice == "Resize with Bleed":
             format_width_mm = bleed_dimensions[0]
             format_height_mm = bleed_dimensions[1]
 
-            st.sidebar.info(f"Selected Format: {format_choice}")
-            st.sidebar.info(f"Base dimensions: {int(initial_width_mm)} mm x {int(initial_height_mm)} mm")
-            st.sidebar.info(f"Final dimensions with Bleed: {format_width_mm} mm x {format_height_mm} mm")
-
             # Check if image is larger than the specified dimensions
             if initial_width_mm > format_width_mm or initial_height_mm > format_height_mm:
                 resize_option = st.sidebar.radio("Image is larger than specified dimensions. Choose an option:", ["Scale Down and Fill Bleed", "Crop Image"])
             else:
                 resize_option = None  # No need to choose, image will just be resized
+                
+            st.sidebar.info(f"Selected Format: {format_choice}")
+            st.sidebar.info(f"Base dimensions: {int(initial_width_mm)} mm x {int(initial_height_mm)} mm")
+            st.sidebar.info(f"Final dimensions with Bleed: {format_width_mm} mm x {format_height_mm} mm")
 
             if st.sidebar.button("Process Image"):
                 with st.spinner("Processing your image..."):
