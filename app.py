@@ -26,7 +26,7 @@ st.sidebar.title("Image Processing Controls")
 uploaded_file = st.sidebar.file_uploader("Choose an image...", ["jpg", "png", "jpeg"])
 
 # Select service: Upscale or Resize with Bleed
-service_choice = st.sidebar.radio("Choose a service", ["Upscale Image", "Resize with Bleed", "Remove Background","Generate Flyer"])
+service_choice = st.sidebar.radio("Choose a service", ["Upscale Image", "Resize with Bleed", "Remove Background", "Generate Flyer"])
 
 if service_choice == "Upscale Image":
     upscale_factor = st.sidebar.slider("Upscale Factor", const.MIN_UPSCALE_FACTOR, const.MAX_UPSCALE_FACTOR, const.DEFAULT_UPSCALE_FACTOR)
@@ -64,20 +64,12 @@ if service_choice == "Upscale Image":
                     st.error(f"Error: {str(e)}")
 
 elif service_choice == "Resize with Bleed":
-    # Get initial dimensions from the image or use defaults
-    initial_width_mm, initial_height_mm = utils.get_initial_dimensions(uploaded_file)
+    resize_type = st.sidebar.radio("Resize Type", ["Custom Dimensions", "Standard Resize"])
 
-    # Select how to adjust dimensions
-    adjustment_method = st.sidebar.radio("Adjust Dimensions by", ["Bleed", "Base Dimensions"])
+    if resize_type == "Custom Dimensions":
+        # Get initial dimensions from the image or use defaults
+        initial_width_mm, initial_height_mm = utils.get_initial_dimensions(uploaded_file)
 
-    if adjustment_method == "Bleed":
-        # Bleed slider and calculation
-        bleed_mm = st.sidebar.slider("Bleed Margin (mm)", 0, const.MAX_BLEED_MARGIN, 0)
-        
-        # Adjust base dimensions based on the bleed
-        base_width_mm, base_height_mm = utils.calculate_dimensions_with_bleed(initial_width_mm, initial_height_mm, bleed_mm)
-        
-    else:
         # Base dimensions input
         base_width_mm = st.sidebar.number_input("Base Width (mm)", const.MIN_DIMENSION, value=initial_width_mm)
         base_height_mm = st.sidebar.number_input("Base Height (mm)", const.MIN_DIMENSION, value=initial_height_mm)
@@ -85,38 +77,85 @@ elif service_choice == "Resize with Bleed":
         # Calculate the bleed based on the difference between the new dimensions and the initial dimensions
         bleed_mm = utils.calculate_bleed_from_dimensions(initial_width_mm, initial_height_mm, base_width_mm, base_height_mm)
 
-    # Display the final bleed and dimensions
-    st.sidebar.info(f"Bleed: {bleed_mm:.2f} mm")
-    st.sidebar.info(f"Final dimensions with bleed: {base_width_mm} mm x {base_height_mm} mm")
+        # Display the final bleed and dimensions
+        st.sidebar.info(f"Bleed: {bleed_mm:.2f} mm")
+        st.sidebar.info(f"Final dimensions with bleed: {base_width_mm} mm x {base_height_mm} mm")
 
-    st.title("Image Resize with Bleed")
-    st.subheader("Upload an image and specify the base dimensions and bleed margin. The app will resize your image and add the bleed.")
+        st.title("Image Resize with Custom Dimensions and Bleed")
+        st.subheader("Upload an image and specify the base dimensions. The app will resize your image and add the bleed.")
 
-    if uploaded_file is not None:
-        img_bytes = uploaded_file.read()
+        if uploaded_file is not None:
+            img_bytes = uploaded_file.read()
 
-        if st.sidebar.button("Process Image"):
-            with st.spinner("Resizing your image with bleed..."):
-                try:
-                    # Use the adjusted dimensions for the resize function
-                    resized_image, image_bytes = resize_with_bleed(img_bytes, base_width_mm, base_height_mm, bleed_mm)
-                    # Convert PIL image to bytes
-                    buffered = BytesIO()
-                    resized_image.save(buffered, format="PNG")
-                    image_bytes = buffered.getvalue()
-                    if resized_image:
-                        st.success("Image resized with bleed successfully!")
-                        st.image(resized_image, caption="Resized Image", use_column_width=True)
-                        st.download_button(
-                            label="Download Resized Image",
-                            data=image_bytes,
-                            file_name="resized_image.png",
-                            mime="image/png"
-                        )
-                    else:
-                        st.error("Could not download the image.")
-                except ValueError as e:
-                    st.error(f"Error: {str(e)}")
+            if st.sidebar.button("Process Image"):
+                with st.spinner("Resizing your image with bleed..."):
+                    try:
+                        # Use the adjusted dimensions for the resize function
+                        resized_image, image_bytes = resize_with_bleed(img_bytes, base_width_mm, base_height_mm, bleed_mm)
+                        # Convert PIL image to bytes
+                        buffered = BytesIO()
+                        resized_image.save(buffered, format="PNG")
+                        image_bytes = buffered.getvalue()
+                        if resized_image:
+                            st.success("Image resized with bleed successfully!")
+                            st.image(resized_image, caption="Resized Image", use_column_width=True)
+                            st.download_button(
+                                label="Download Resized Image",
+                                data=image_bytes,
+                                file_name="resized_image.png",
+                                mime="image/png"
+                            )
+                        else:
+                            st.error("Could not download the image.")
+                    except ValueError as e:
+                        st.error(f"Error: {str(e)}")
+
+    elif resize_type == "Standard Resize":
+        # Import standard formats from constants.py
+        formats = const.FORMATS
+
+        # Select format
+        format_choice = st.sidebar.selectbox("Choose a format", list(formats.keys()))
+
+        # Determine if portrait or paysage
+        orientation = st.sidebar.radio("Choose orientation", ["Portrait", "Paysage"])
+
+        # Get dimensions and bleed based on the selected format
+        selected_format = f"{format_choice.lower()}-{orientation.lower()}"
+        dimensions, bleed_dimensions = formats.get(selected_format, formats['A4-portrait'])
+
+        st.sidebar.info(f"Selected Format: {format_choice} ({orientation})")
+        st.sidebar.info(f"Dimensions: {dimensions[0]}mm x {dimensions[1]}mm")
+        st.sidebar.info(f"Dimensions with Bleed: {bleed_dimensions[0]}mm x {bleed_dimensions[1]}mm")
+
+        st.title("Standard Image Resize")
+        st.subheader("Upload an image and choose a standard format. The app will resize your image to match the selected format and add the bleed.")
+
+        if uploaded_file is not None:
+            img_bytes = uploaded_file.read()
+
+            if st.sidebar.button("Process Image"):
+                with st.spinner("Resizing your image to the selected format..."):
+                    try:
+                        # Use the standard format dimensions for the resize function
+                        resized_image, image_bytes = resize_with_bleed(img_bytes, bleed_dimensions[0], bleed_dimensions[1], bleed_dimensions[0] - dimensions[0])
+                        # Convert PIL image to bytes
+                        buffered = BytesIO()
+                        resized_image.save(buffered, format="PNG")
+                        image_bytes = buffered.getvalue()
+                        if resized_image:
+                            st.success("Image resized to standard format successfully!")
+                            st.image(resized_image, caption="Resized Image", use_column_width=True)
+                            st.download_button(
+                                label="Download Resized Image",
+                                data=image_bytes,
+                                file_name="resized_image.png",
+                                mime="image/png"
+                            )
+                        else:
+                            st.error("Could not download the image.")
+                    except ValueError as e:
+                        st.error(f"Error: {str(e)}")
 
 elif service_choice == "Remove Background":
     st.title("Background Remover")
@@ -151,6 +190,7 @@ elif service_choice == "Remove Background":
                     )
                 except ValueError as e:
                     st.error(f"Error: {str(e)}")
+
 elif service_choice == "Generate Flyer":
     st.title("Flyer Generator")
     st.subheader("Enter the details to generate your flyer image.")
