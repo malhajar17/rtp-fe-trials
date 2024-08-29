@@ -72,7 +72,7 @@ def process_and_display_image(img_bytes, width_mm, height_mm):
     """
     Handles the logic for processing the image based on the user-defined width and height.
     """
-    original_width_mm, original_height_mm = get_initial_dimensions(io.BytesIO(img_bytes))
+    original_width_mm, original_height_mm = get_initial_dimensions(img_bytes)
 
     if original_width_mm < width_mm and original_height_mm < height_mm:
         # Image is smaller than the format, add bleed to fill the format
