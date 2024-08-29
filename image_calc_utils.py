@@ -81,18 +81,25 @@ def process_image_larger_than_format(image_bytes, format_width_mm, format_height
             cropped_image.save(buffered, format="PNG", dpi=(300, 300))
             return cropped_image, buffered.getvalue()
         else:
-            # Scale down the image to fit within the format while maintaining aspect ratio
-            image.thumbnail((format_width_px-20, format_height_px-20), Image.LANCZOS)
-            diff_w = max(0, format_width_px+20 - image.width)
-            diff_h = max(0, format_height_px+20 - image.height)
+            # Slightly reduce the image size to create space for bleed
+            reduction_factor = 0.98  # 2% smaller
+            target_width_px = int(format_width_px * reduction_factor)
+            target_height_px = int(format_height_px * reduction_factor)
+
+            # Downsize the image to slightly smaller than the format while maintaining aspect ratio
+            image.thumbnail((target_width_px, target_height_px), Image.LANCZOS)
+
+            # Calculate the gaps (difference between the resized image and the format)
+            diff_w = format_width_px - image.width
+            diff_h = format_height_px - image.height
 
             # Save the resized image to bytes
             buffered = io.BytesIO()
             image.save(buffered, format="PNG", dpi=(300, 300))
             image_bytes = buffered.getvalue()
 
-            # Add bleed only if the image is smaller than the format
-            resized_image, image_bytes = resize_with_bleed_server(image_bytes, image.width+10, image.height+10, diff_w / 2, diff_h / 2, resize_with_bleed_func)
+            # Add bleed to fill the gap
+            resized_image, image_bytes = resize_with_bleed_server(image_bytes, image.width, image.height, diff_w / 2, diff_h / 2, resize_with_bleed_func)
             return resized_image, image_bytes
 
         
