@@ -82,13 +82,10 @@ def process_image_larger_than_format(image_bytes, format_width_mm, format_height
             return cropped_image, buffered.getvalue()
         else:
             # Scale down the image to fit within the format while maintaining aspect ratio
-            image.thumbnail((format_width_px, format_height_px), Image.LANCZOS)
-            diff_w = max(0, format_width_px - image.width)
-            diff_h = max(0, format_height_px - image.height)
+            image.thumbnail((format_width_px-20, format_height_px-20), Image.LANCZOS)
+            diff_w = max(0, format_width_px+20 - image.width)
+            diff_h = max(0, format_height_px+20 - image.height)
 
-            buffered = io.BytesIO()
-            image.save(buffered, format="PNG", dpi=(300, 300))
-            return image, buffered.getvalue()
             # Save the resized image to bytes
             buffered = io.BytesIO()
             image.save(buffered, format="PNG", dpi=(300, 300))
