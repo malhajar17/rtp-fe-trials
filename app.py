@@ -4,6 +4,7 @@ import elements as ui
 import constants as const  # Import your constants
 from io import BytesIO
 import utils  # Import the utils module
+import image_calc_utils as img_utils
 
 # Streamlit page configuration
 st.set_page_config(
@@ -67,43 +68,27 @@ elif service_choice == "Resize with Bleed":
     resize_type = st.sidebar.radio("Resize Type", ["Custom Dimensions", "Standard Resize"])
 
     if resize_type == "Custom Dimensions":
-        # Get initial dimensions from the image or use defaults
-        initial_width_mm, initial_height_mm = utils.get_initial_dimensions(uploaded_file)
-
-        # Base dimensions input
-        base_width_mm = st.sidebar.number_input("Base Width (mm)", const.MIN_DIMENSION, value=initial_width_mm)
-        base_height_mm = st.sidebar.number_input("Base Height (mm)", const.MIN_DIMENSION, value=initial_height_mm)
-
         st.title("Image Resize with Custom Dimensions")
         st.subheader("Upload an image and specify the base dimensions. The app will resize your image accordingly.")
+
+        # Get initial dimensions from the image or use defaults
+        initial_width_mm, initial_height_mm = img_utils.get_initial_dimensions(uploaded_file)
+
+        # Base dimensions input by user
+        base_width_mm = st.sidebar.number_input("Base Width (mm)", min_value=float(const.MIN_DIMENSION), value=float(initial_width_mm), step=1.0)
+        base_height_mm = st.sidebar.number_input("Base Height (mm)", min_value=float(const.MIN_DIMENSION), value=float(initial_height_mm), step=1.0)
 
         if uploaded_file is not None:
             img_bytes = uploaded_file.read()
 
             if st.sidebar.button("Process Image"):
-                with st.spinner("Resizing your image..."):
-                    try:
-                        # Use the specified dimensions for the resize function without applying bleed
-                        resized_image, image_bytes = resize_with_bleed(img_bytes, base_width_mm, base_height_mm, 0, 0)
-                        # Convert PIL image to bytes
-                        buffered = BytesIO()
-                        resized_image.save(buffered, format="PNG")
-                        image_bytes = buffered.getvalue()
-                        if resized_image:
-                            st.success("Image resized successfully!")
-                            st.image(resized_image, caption="Resized Image", use_column_width=True)
-                            st.download_button(
-                                label="Download Resized Image",
-                                data=image_bytes,
-                                file_name="resized_image.png",
-                                mime="image/png"
-                            )
-                        else:
-                            st.error("Could not download the image.")
-                    except ValueError as e:
-                        st.error(f"Error: {str(e)}")
-                        
+                with st.spinner("Processing your image..."):
+                    img_utils.process_and_display_image(img_bytes, base_width_mm, base_height_mm)
+
     elif resize_type == "Standard Resize":
+        st.title("Standard Image Resize")
+        st.subheader("Upload an image and choose a standard format. The app will resize your image to match the selected format and add the bleed.")
+
         # Select orientation first
         orientation = st.sidebar.radio("Choose orientation", ["Portrait", "Paysage"])
 
@@ -115,43 +100,19 @@ elif service_choice == "Resize with Bleed":
 
         # Get dimensions and bleed based on the selected format
         dimensions, bleed_dimensions = const.FORMATS.get(format_choice)
-
-        base_width_mm, base_height_mm = utils.get_initial_dimensions(uploaded_file)
-        bleed_w_mm = bleed_dimensions[0] 
-        bleed_h_mm = bleed_dimensions[1] 
+        format_width_mm = bleed_dimensions[0]
+        format_height_mm = bleed_dimensions[1]
 
         st.sidebar.info(f"Selected Format: {format_choice}")
-        st.sidebar.info(f"Base dimensions: {round(base_width_mm)} mm x {round(base_height_mm)} mm")
-        st.sidebar.info(f"Final dimensions with Bleed: {bleed_dimensions[0]} mm x {bleed_dimensions[1]} mm")
-
-        st.title("Standard Image Resize")
-        st.subheader("Upload an image and choose a standard format. The app will resize your image to match the selected format and add the bleed.")
+        st.sidebar.info(f"Base dimensions: {dimensions[0]} mm x {dimensions[1]} mm")
+        st.sidebar.info(f"Final dimensions with Bleed: {format_width_mm} mm x {format_height_mm} mm")
 
         if uploaded_file is not None:
             img_bytes = uploaded_file.read()
 
             if st.sidebar.button("Process Image"):
-                with st.spinner("Resizing your image to the selected format..."):
-                    try:
-                        # Use the calculated dimensions for the resize function
-                        resized_image, image_bytes = resize_with_bleed(img_bytes, base_width_mm, base_height_mm, bleed_w_mm, bleed_h_mm)
-                        # Convert PIL image to bytes
-                        buffered = BytesIO()
-                        resized_image.save(buffered, format="PNG")
-                        image_bytes = buffered.getvalue()
-                        if resized_image:
-                            st.success("Image resized to standard format successfully!")
-                            st.image(resized_image, caption="Resized Image", use_column_width=True)
-                            st.download_button(
-                                label="Download Resized Image",
-                                data=image_bytes,
-                                file_name="resized_image.png",
-                                mime="image/png"
-                            )
-                        else:
-                            st.error("Could not download the image.")
-                    except ValueError as e:
-                        st.error(f"Error: {str(e)}")
+                with st.spinner("Processing your image..."):
+                    img_utils.process_and_display_image(img_bytes, format_width_mm, format_height_mm)
 
 elif service_choice == "Remove Background":
     st.title("Background Remover")
