@@ -128,7 +128,7 @@ elif service_choice == "Resize with Bleed":
         bleed_h_mm = bleed_dimensions[1] 
 
         st.sidebar.info(f"Selected Format: {format_choice}")
-        st.sidebar.info(f"Base dimensions: {base_width_mm} mm x {base_height_mm} mm")
+        st.sidebar.info(f"Base dimensions: {round(base_width_mm)} mm x {round(base_height_mm)} mm")
         st.sidebar.info(f"Final dimensions with Bleed: {bleed_dimensions[0]} mm x {bleed_dimensions[1]} mm")
 
         st.title("Standard Image Resize")
