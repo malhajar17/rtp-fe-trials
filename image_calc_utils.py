@@ -83,15 +83,16 @@ def process_image_larger_than_format(image_bytes, format_width_mm, format_height
         else:
             # Scale down the image to fit within the format while maintaining aspect ratio
             image.thumbnail((format_width_px, format_height_px), Image.LANCZOS)
-            diff_w = format_width_px - image.width
-            diff_h = format_height_px - image.height
+            diff_w = max(0, format_width_px - image.width)
+            diff_h = max(0, format_height_px - image.height)
 
-            # Save the resized image to bytes
-            buffered = io.BytesIO()
-            image.save(buffered, format="PNG", dpi=(300, 300))
-            image_bytes = buffered.getvalue()
+            # If there's no space for bleed, just return the resized image
+            if diff_w == 0 and diff_h == 0:
+                buffered = io.BytesIO()
+                image.save(buffered, format="PNG", dpi=(300, 300))
+                return image, buffered.getvalue()
 
-            # Add bleed
+            # Add bleed only if the image is smaller than the format
             resized_image, image_bytes = resize_with_bleed_server(image_bytes, image.width, image.height, diff_w / 2, diff_h / 2, resize_with_bleed_func)
             return resized_image, image_bytes
 
