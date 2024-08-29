@@ -40,36 +40,51 @@ def process_image_smaller_than_format(image_bytes, format_width_mm, format_heigh
 def process_image_larger_than_format(image_bytes, format_width_mm, format_height_mm, resize_option, resize_with_bleed_func):
     """
     Process an image that is larger than the selected format, allowing for either cropping or resizing with bleed.
+    This function maintains the aspect ratio and keeps the DPI at 300.
     """
     with Image.open(io.BytesIO(image_bytes)) as image:
+        # Ensure the image's DPI is 300
+        original_dpi = image.info.get('dpi', (300, 300))
+        if original_dpi != (300, 300):
+            image = image.resize(image.size, resample=Image.LANCZOS)
+            image.info['dpi'] = (300, 300)
+
         original_width_mm, original_height_mm = get_initial_dimensions(image_bytes)
+
+        # Convert format dimensions from mm to pixels
+        format_width_px = int((format_width_mm / 25.4) * 300)
+        format_height_px = int((format_height_mm / 25.4) * 300)
 
         if resize_option == "Crop Image":
             # Resize to fill the format while maintaining aspect ratio, then crop to fit
-            image.thumbnail((format_width_mm, format_height_mm))
-            left = (image.width - format_width_mm) / 2
-            top = (image.height - format_height_mm) / 2
-            right = (image.width + format_width_mm) / 2
-            bottom = (image.height + format_height_mm) / 2
+            image.thumbnail((format_width_px, format_height_px), Image.LANCZOS)
+
+            # Calculate cropping coordinates
+            left = (image.width - format_width_px) / 2
+            top = (image.height - format_height_px) / 2
+            right = (image.width + format_width_px) / 2
+            bottom = (image.height + format_height_px) / 2
             cropped_image = image.crop((left, top, right, bottom))
 
             # Save the cropped image to bytes
             buffered = io.BytesIO()
-            cropped_image.save(buffered, format="PNG")
+            cropped_image.save(buffered, format="PNG", dpi=(300, 300))
             return cropped_image, buffered.getvalue()
         else:
-            # Scale down the image to fit within the format while maintaining aspect ratio and then add bleed
-            image.thumbnail((format_width_mm, format_height_mm))
-            diff_w = format_width_mm - image.width
-            diff_h = format_height_mm - image.height
+            # Scale down the image to fit within the format while maintaining aspect ratio
+            image.thumbnail((format_width_px, format_height_px), Image.LANCZOS)
+            diff_w = format_width_px - image.width
+            diff_h = format_height_px - image.height
 
+            # Save the resized image to bytes
             buffered = io.BytesIO()
-            image.save(buffered, format="PNG")
+            image.save(buffered, format="PNG", dpi=(300, 300))
             image_bytes = buffered.getvalue()
 
+            # Add bleed
             resized_image, image_bytes = resize_with_bleed_server(image_bytes, image.width, image.height, diff_w / 2, diff_h / 2, resize_with_bleed_func)
             return resized_image, image_bytes
-        
+    
 def process_and_display_image(img_bytes, width_mm, height_mm):
     """
     Handles the logic for processing the image based on the user-defined width and height.
