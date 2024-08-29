@@ -96,7 +96,7 @@ def process_and_display_image(img_bytes, width_mm, height_mm):
         resized_image, image_bytes = img_utils.process_image_smaller_than_format(img_bytes, width_mm, height_mm, resize_with_bleed)
     else:
         # Image is larger than the format, give the user options
-        resize_option = st.sidebar.radio("Image is larger than specified dimensions. Choose an option:", ["Crop Image", "Scale Down and Fill Bleed"])
+        resize_option = st.sidebar.radio("Image is larger than specified dimensions. Choose an option:", ["Scale Down and Fill Bleed","Crop Image"])
         resized_image, image_bytes = img_utils.process_image_larger_than_format(img_bytes, width_mm, height_mm, resize_option, resize_with_bleed)
 
     if resized_image:
