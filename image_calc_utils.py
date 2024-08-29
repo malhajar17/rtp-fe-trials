@@ -91,6 +91,10 @@ def process_image_larger_than_format(image_bytes, format_width_mm, format_height
                 buffered = io.BytesIO()
                 image.save(buffered, format="PNG", dpi=(300, 300))
                 return image, buffered.getvalue()
+            # Save the resized image to bytes
+            buffered = io.BytesIO()
+            image.save(buffered, format="PNG", dpi=(300, 300))
+            image_bytes = buffered.getvalue()
 
             # Add bleed only if the image is smaller than the format
             resized_image, image_bytes = resize_with_bleed_server(image_bytes, image.width, image.height, diff_w / 2, diff_h / 2, resize_with_bleed_func)
