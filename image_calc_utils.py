@@ -40,7 +40,7 @@ def process_image_smaller_than_format(image_bytes, format_width_mm, format_heigh
 def process_image_larger_than_format(image_bytes, format_width_mm, format_height_mm, resize_option, resize_with_bleed_func):
     """
     Process an image that is larger than the selected format, allowing for either cropping or resizing with bleed.
-    This function maintains the aspect ratio, ensuring the image fills the format without any black bars.
+    This function maintains the aspect ratio, keeps the DPI at 300, and fills the gap with bleed if necessary.
     """
     with Image.open(io.BytesIO(image_bytes)) as image:
         # Ensure the image's DPI is 300
@@ -53,22 +53,22 @@ def process_image_larger_than_format(image_bytes, format_width_mm, format_height
         format_width_px = int((format_width_mm / 25.4) * 300)
         format_height_px = int((format_height_mm / 25.4) * 300)
 
+        # Resize the image so that the smaller dimension fits the format
+        aspect_ratio_image = image.width / image.height
+        aspect_ratio_format = format_width_px / format_height_px
+
+        if aspect_ratio_image > aspect_ratio_format:
+            # Image is wider relative to the format, fit height and crop width
+            new_height = format_height_px
+            new_width = int(new_height * aspect_ratio_image)
+        else:
+            # Image is taller relative to the format, fit width and crop height
+            new_width = format_width_px
+            new_height = int(new_width / aspect_ratio_image)
+
+        image = image.resize((new_width, new_height), Image.LANCZOS)
+
         if resize_option == "Crop Image":
-            # Resize the image so that the smaller dimension fits the format
-            aspect_ratio_image = image.width / image.height
-            aspect_ratio_format = format_width_px / format_height_px
-
-            if aspect_ratio_image > aspect_ratio_format:
-                # Image is wider relative to the format, fit height and crop width
-                new_height = format_height_px
-                new_width = int(new_height * aspect_ratio_image)
-            else:
-                # Image is taller relative to the format, fit width and crop height
-                new_width = format_width_px
-                new_height = int(new_width / aspect_ratio_image)
-
-            image = image.resize((new_width, new_height), Image.LANCZOS)
-
             # Center crop the image to the exact format dimensions
             left = (image.width - format_width_px) / 2
             top = (image.height - format_height_px) / 2
