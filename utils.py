@@ -60,8 +60,8 @@ def get_initial_dimensions(uploaded_file):
         initial_height_mm = (height_px / dpi_y) * 25.4
     else:
         # Default dimensions in millimeters
-        initial_width_mm = 100  
-        initial_height_mm = 150  
+        initial_width_mm = 0
+        initial_height_mm = 0  
     
     return initial_width_mm, initial_height_mm
 
