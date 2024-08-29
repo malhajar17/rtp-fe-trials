@@ -102,9 +102,9 @@ elif service_choice == "Resize with Bleed":
         dimensions, bleed_dimensions = const.FORMATS.get(format_choice)
         format_width_mm = bleed_dimensions[0]
         format_height_mm = bleed_dimensions[1]
-
+        initial_width_mm, initial_height_mm = img_utils.get_initial_dimensions(uploaded_file)  
         st.sidebar.info(f"Selected Format: {format_choice}")
-        st.sidebar.info(f"Base dimensions: {dimensions[0]} mm x {dimensions[1]} mm")
+        st.sidebar.info(f"Original Image dimensions: {initial_width_mm} mm x {initial_height_mm} mm")
         st.sidebar.info(f"Final dimensions with Bleed: {format_width_mm} mm x {format_height_mm} mm")
 
         if uploaded_file is not None:
