@@ -82,7 +82,7 @@ def process_image_larger_than_format(image_bytes, format_width_mm, format_height
             return cropped_image, buffered.getvalue()
         else:
             # Resize slightly more to ensure there's space for outpainting/bleed
-            reduction_factor = 0.95  # 5% smaller
+            reduction_factor = 0.8  # 5% smaller
             slightly_smaller_width = int(new_width * reduction_factor)
             slightly_smaller_height = int(new_height * reduction_factor)
 
@@ -99,7 +99,7 @@ def process_image_larger_than_format(image_bytes, format_width_mm, format_height
 
             # Add bleed to fill the gap (outpaint)
             final_image, final_image_bytes = resize_with_bleed_server(
-                resized_image_bytes, image.width, image.height, diff_w / 2, diff_h / 2, resize_with_bleed_func
+                resized_image_bytes, image.width, image.height, (diff_w-4) / 2, diff_h / 2, resize_with_bleed_func
             )
             return final_image, final_image_bytes
         
