@@ -80,6 +80,7 @@ def process_image_larger_than_format(image_bytes, format_width_mm, format_height
             buffered = io.BytesIO()
             cropped_image.save(buffered, format="PNG", dpi=(300, 300))
             return cropped_image, buffered.getvalue()
+
         else:
             # Slightly reduce the image size to create space for bleed
             reduction_factor = 0.98  # 2% smaller
@@ -89,18 +90,25 @@ def process_image_larger_than_format(image_bytes, format_width_mm, format_height
             # Downsize the image to slightly smaller than the format while maintaining aspect ratio
             image.thumbnail((target_width_px, target_height_px), Image.LANCZOS)
 
-            # Calculate the gaps (difference between the resized image and the format)
-            diff_w = format_width_px - image.width
-            diff_h = format_height_px - image.height
-
             # Save the resized image to bytes
             buffered = io.BytesIO()
             image.save(buffered, format="PNG", dpi=(300, 300))
-            image_bytes = buffered.getvalue()
+            resized_image_bytes = buffered.getvalue()
+
+            # Reload the image from bytes to get accurate dimensions after resizing
+            with Image.open(io.BytesIO(resized_image_bytes)) as resized_image:
+                resized_width_px = resized_image.width
+                resized_height_px = resized_image.height
+
+            # Calculate the gaps (difference between the resized image and the format)
+            diff_w = format_width_px - resized_width_px
+            diff_h = format_height_px - resized_height_px
 
             # Add bleed to fill the gap
-            resized_image, image_bytes = resize_with_bleed_server(image_bytes, image.width, image.height, diff_w / 2, diff_h / 2, resize_with_bleed_func)
-            return resized_image, image_bytes
+            final_image, final_image_bytes = resize_with_bleed_server(
+                resized_image_bytes, resized_width_px, resized_height_px, diff_w / 2, diff_h / 2, resize_with_bleed_func
+            )
+            return final_image, final_image_bytes
 
         
 def process_and_display_image(img_bytes, width_mm, height_mm):
