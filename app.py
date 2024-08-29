@@ -112,7 +112,7 @@ elif service_choice == "Resize with Bleed":
 
             if st.sidebar.button("Process Image"):
                 with st.spinner("Processing your image..."):
-                    img_utils.process_and_display_image(img_bytes, format_width_mm, format_height_mm)
+                    img_utils.process_and_display_image(uploaded_file, format_width_mm, format_height_mm)
 
 elif service_choice == "Remove Background":
     st.title("Background Remover")
