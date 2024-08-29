@@ -43,7 +43,7 @@ def process_image_larger_than_format(image_bytes, format_width_mm, format_height
     Process an image that is larger than the selected format, allowing for either cropping or resizing with bleed.
     """
     image = Image.open(io.BytesIO(image_bytes))
-    original_width_mm, original_height_mm = get_initial_dimensions(io.BytesIO(image_bytes))
+    original_width_mm, original_height_mm = get_initial_dimensions(image_bytes)
 
     if resize_option == "Crop Image":
         # Resize to fill the format while maintaining aspect ratio, then crop to fit
