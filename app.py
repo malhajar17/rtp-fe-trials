@@ -82,7 +82,7 @@ elif service_choice == "Resize with Bleed":
 
             if st.sidebar.button("Process Image"):
                 with st.spinner("Processing your image..."):
-                    process_and_display_image(img_bytes, base_width_mm, base_height_mm)
+                    img_utils.process_and_display_image(img_bytes, base_width_mm, base_height_mm)
 
     elif resize_type == "Standard Resize":
         st.title("Standard Image Resize")
@@ -108,7 +108,7 @@ elif service_choice == "Resize with Bleed":
             format_height_mm = bleed_dimensions[1]
 
             st.sidebar.info(f"Selected Format: {format_choice}")
-            st.sidebar.info(f"Base dimensions: {dimensions[0]} mm x {dimensions[1]} mm")
+            st.sidebar.info(f"Base dimensions: {int(initial_width_mm)} mm x {int(initial_height_mm)} mm")
             st.sidebar.info(f"Final dimensions with Bleed: {format_width_mm} mm x {format_height_mm} mm")
 
             if st.sidebar.button("Process Image"):
