@@ -105,7 +105,7 @@ def process_image_larger_than_format(image_bytes, format_width_mm, format_height
 
             # Add bleed to fill the gap
             final_image, final_image_bytes = resize_with_bleed_server(
-                resized_image_bytes, resized_width_px, resized_height_px, diff_w / 2, diff_h / 2, resize_with_bleed_func
+                resized_image_bytes, resized_width_px, resized_height_px, (diff_w / 2)+ (format_width_px * 0.05) , (diff_h / 2) + (format_height_px * 0.05), resize_with_bleed_func
             )
             return final_image, final_image_bytes
         
