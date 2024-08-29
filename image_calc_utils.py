@@ -8,14 +8,16 @@ def get_initial_dimensions(image_bytes):
     """
     Get initial dimensions from the image metadata or use defaults.
     """
-    with Image.open(io.BytesIO(image_bytes)) as image:
-        width_px, height_px = image.size
-        dpi = image.info.get('dpi', (300, 300))
-        dpi_x, dpi_y = dpi
-        initial_width_mm = (width_px / dpi_x) * 25.4
-        initial_height_mm = (height_px / dpi_y) * 25.4
-    
-    return initial_width_mm, initial_height_mm
+    try:
+        with Image.open(io.BytesIO(image_bytes)) as image:
+            width_px, height_px = image.size
+            dpi = image.info.get('dpi', (300, 300))
+            dpi_x, dpi_y = dpi
+            initial_width_mm = (width_px / dpi_x) * 25.4
+            initial_height_mm = (height_px / dpi_y) * 25.4
+        return initial_width_mm, initial_height_mm
+    except Exception as e:
+        raise ValueError(f"Failed to get image dimensions: {str(e)}")
 
 def resize_with_bleed_server(image_bytes, width_mm, height_mm, bleed_w_mm, bleed_h_mm, resize_with_bleed_func):
     """
@@ -67,32 +69,7 @@ def process_image_larger_than_format(image_bytes, format_width_mm, format_height
 
             resized_image, image_bytes = resize_with_bleed_server(image_bytes, image.width, image.height, diff_w / 2, diff_h / 2, resize_with_bleed_func)
             return resized_image, image_bytes
-
-def process_and_display_image(img_bytes, width_mm, height_mm):
-    """
-    Handles the logic for processing the image based on the user-defined width and height.
-    """
-    original_width_mm, original_height_mm = get_initial_dimensions(img_bytes)
-
-    if original_width_mm < width_mm and original_height_mm < height_mm:
-        # Image is smaller than the format, add bleed to fill the format
-        resized_image, image_bytes = process_image_smaller_than_format(img_bytes, width_mm, height_mm, resize_with_bleed)
-    else:
-        # Image is larger than the format, give the user options
-        resize_option = st.sidebar.radio("Image is larger than specified dimensions. Choose an option:", ["Crop Image", "Scale Down and Fill Bleed"])
-        resized_image, image_bytes = process_image_larger_than_format(img_bytes, width_mm, height_mm, resize_option, resize_with_bleed)
-
-    if resized_image:
-        st.success("Image processed successfully!")
-        st.image(resized_image, caption="Processed Image", use_column_width=True)
-        st.download_button(
-            label="Download Processed Image",
-            data=image_bytes,
-            file_name="processed_image.png",
-            mime="image/png"
-        )
-    else:
-        st.error("Could not process the image.")
+        
 def process_and_display_image(img_bytes, width_mm, height_mm):
     """
     Handles the logic for processing the image based on the user-defined width and height.

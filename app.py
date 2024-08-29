@@ -71,45 +71,45 @@ elif service_choice == "Resize with Bleed":
         st.title("Image Resize with Custom Dimensions")
         st.subheader("Upload an image and specify the base dimensions. The app will resize your image accordingly.")
 
-        # Get initial dimensions from the image or use defaults
-        initial_width_mm, initial_height_mm = img_utils.get_initial_dimensions(uploaded_file.read())
-
-        # Base dimensions input by user
-        base_width_mm = st.sidebar.number_input("Base Width (mm)", min_value=float(const.MIN_DIMENSION), value=float(initial_width_mm), step=1.0)
-        base_height_mm = st.sidebar.number_input("Base Height (mm)", min_value=float(const.MIN_DIMENSION), value=float(initial_height_mm), step=1.0)
-
         if uploaded_file is not None:
-            img_bytes = uploaded_file.read()
+            img_bytes = uploaded_file.read()  # Read the file only once and reuse the bytes
+
+            initial_width_mm, initial_height_mm = img_utils.get_initial_dimensions(img_bytes)
+
+            # Base dimensions input by user
+            base_width_mm = st.sidebar.number_input("Base Width (mm)", min_value=float(const.MIN_DIMENSION), value=float(initial_width_mm), step=1.0)
+            base_height_mm = st.sidebar.number_input("Base Height (mm)", min_value=float(const.MIN_DIMENSION), value=float(initial_height_mm), step=1.0)
 
             if st.sidebar.button("Process Image"):
                 with st.spinner("Processing your image..."):
-                    img_utils.process_and_display_image(img_bytes, base_width_mm, base_height_mm)
+                    process_and_display_image(img_bytes, base_width_mm, base_height_mm)
 
     elif resize_type == "Standard Resize":
         st.title("Standard Image Resize")
         st.subheader("Upload an image and choose a standard format. The app will resize your image to match the selected format and add the bleed.")
 
-        # Select orientation first
-        orientation = st.sidebar.radio("Choose orientation", ["Portrait", "Paysage"])
-        initial_width_mm, initial_height_mm = img_utils.get_initial_dimensions(uploaded_file.read())
-
-        # Determine the list of available formats based on the orientation
-        available_formats = [f for f in const.FORMATS.keys() if orientation.lower() in f]
-
-        # Select format based on the chosen orientation
-        format_choice = st.sidebar.selectbox("Choose a format", available_formats)
-
-        # Get dimensions and bleed based on the selected format
-        dimensions, bleed_dimensions = const.FORMATS.get(format_choice)
-        format_width_mm = bleed_dimensions[0]
-        format_height_mm = bleed_dimensions[1]
-
-        st.sidebar.info(f"Selected Format: {format_choice}")
-        st.sidebar.info(f"Base dimensions: {int(initial_width_mm)} mm x {int(initial_height_mm)} mm")
-        st.sidebar.info(f"Final dimensions with Bleed: {format_width_mm} mm x {format_height_mm} mm")
-
         if uploaded_file is not None:
-            img_bytes = uploaded_file.read()
+            img_bytes = uploaded_file.read()  # Read the file only once and reuse the bytes
+
+            initial_width_mm, initial_height_mm = img_utils.get_initial_dimensions(img_bytes)
+
+            # Select orientation first
+            orientation = st.sidebar.radio("Choose orientation", ["Portrait", "Paysage"])
+
+            # Determine the list of available formats based on the orientation
+            available_formats = [f for f in const.FORMATS.keys() if orientation.lower() in f]
+
+            # Select format based on the chosen orientation
+            format_choice = st.sidebar.selectbox("Choose a format", available_formats)
+
+            # Get dimensions and bleed based on the selected format
+            dimensions, bleed_dimensions = const.FORMATS.get(format_choice)
+            format_width_mm = bleed_dimensions[0]
+            format_height_mm = bleed_dimensions[1]
+
+            st.sidebar.info(f"Selected Format: {format_choice}")
+            st.sidebar.info(f"Base dimensions: {dimensions[0]} mm x {dimensions[1]} mm")
+            st.sidebar.info(f"Final dimensions with Bleed: {format_width_mm} mm x {format_height_mm} mm")
 
             if st.sidebar.button("Process Image"):
                 with st.spinner("Processing your image..."):
