@@ -80,9 +80,12 @@ elif service_choice == "Resize with Bleed":
             base_width_mm = st.sidebar.number_input("Base Width (mm)", min_value=float(const.MIN_DIMENSION), value=float(initial_width_mm), step=1.0)
             base_height_mm = st.sidebar.number_input("Base Height (mm)", min_value=float(const.MIN_DIMENSION), value=float(initial_height_mm), step=1.0)
 
+            # Move resize_option here so it's chosen before processing
+            resize_option = st.sidebar.radio("Image is larger than specified dimensions. Choose an option:", ["Scale Down and Fill Bleed", "Crop Image"])
+
             if st.sidebar.button("Process Image"):
                 with st.spinner("Processing your image..."):
-                    img_utils.process_and_display_image(img_bytes, base_width_mm, base_height_mm)
+                    img_utils.process_and_display_image(img_bytes, base_width_mm, base_height_mm, resize_option)
 
     elif resize_type == "Standard Resize":
         st.title("Standard Image Resize")
@@ -111,9 +114,13 @@ elif service_choice == "Resize with Bleed":
             st.sidebar.info(f"Base dimensions: {int(initial_width_mm)} mm x {int(initial_height_mm)} mm")
             st.sidebar.info(f"Final dimensions with Bleed: {format_width_mm} mm x {format_height_mm} mm")
 
+            # Move resize_option here so it's chosen before processing
+            resize_option = st.sidebar.radio("Image is larger than specified dimensions. Choose an option:", ["Scale Down and Fill Bleed", "Crop Image"])
+
             if st.sidebar.button("Process Image"):
                 with st.spinner("Processing your image..."):
-                    img_utils.process_and_display_image(img_bytes, format_width_mm, format_height_mm)
+                    img_utils.process_and_display_image(img_bytes, format_width_mm, format_height_mm, resize_option)
+
 
 elif service_choice == "Remove Background":
     st.title("Background Remover")

@@ -103,7 +103,7 @@ def process_image_larger_than_format(image_bytes, format_width_mm, format_height
             )
             return final_image, final_image_bytes
         
-def process_and_display_image(img_bytes, width_mm, height_mm):
+def process_and_display_image(img_bytes, width_mm, height_mm, resize_option):
     """
     Handles the logic for processing the image based on the user-defined width and height.
     """
@@ -113,8 +113,7 @@ def process_and_display_image(img_bytes, width_mm, height_mm):
         # Image is smaller than the format, add bleed to fill the format
         resized_image, image_bytes = img_utils.process_image_smaller_than_format(img_bytes, width_mm, height_mm, resize_with_bleed)
     else:
-        # Image is larger than the format, give the user options
-        resize_option = st.sidebar.radio("Image is larger than specified dimensions. Choose an option:", ["Scale Down and Fill Bleed","Crop Image"])
+        # Image is larger than the format, use the chosen resize option
         resized_image, image_bytes = img_utils.process_image_larger_than_format(img_bytes, width_mm, height_mm, resize_option, resize_with_bleed)
 
     if resized_image:
