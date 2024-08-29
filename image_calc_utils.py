@@ -97,7 +97,7 @@ def process_image_larger_than_format(image_bytes, format_width_mm, format_height
             image_bytes = buffered.getvalue()
 
             # Add bleed only if the image is smaller than the format
-            resized_image, image_bytes = resize_with_bleed_server(image_bytes, image.width, image.height, diff_w / 2, diff_h / 2, resize_with_bleed_func)
+            resized_image, image_bytes = resize_with_bleed_server(image_bytes, image.width+10, image.height+10, diff_w / 2, diff_h / 2, resize_with_bleed_func)
             return resized_image, image_bytes
 
         
