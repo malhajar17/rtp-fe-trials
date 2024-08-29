@@ -82,7 +82,7 @@ def process_image_larger_than_format(image_bytes, format_width_mm, format_height
             return cropped_image, buffered.getvalue()
         else:
             # Resize slightly more to ensure there's space for outpainting/bleed
-            reduction_factor = 0.8  # 5% smaller
+            reduction_factor = 0.9  # 5% smaller
             slightly_smaller_width = int(new_width * reduction_factor)
             slightly_smaller_height = int(new_height * reduction_factor)
 
