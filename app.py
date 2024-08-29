@@ -105,7 +105,7 @@ elif service_choice == "Resize with Bleed":
         format_height_mm = bleed_dimensions[1]
 
         st.sidebar.info(f"Selected Format: {format_choice}")
-        st.sidebar.info(f"Base dimensions: {initial_width_mm} mm x {initial_height_mm} mm")
+        st.sidebar.info(f"Base dimensions: {int(initial_width_mm)} mm x {int(initial_height_mm)} mm")
         st.sidebar.info(f"Final dimensions with Bleed: {format_width_mm} mm x {format_height_mm} mm")
 
         if uploaded_file is not None:
