@@ -123,9 +123,7 @@ elif service_choice == "Resize with Bleed":
         # Get dimensions and bleed based on the selected format
         dimensions, bleed_dimensions = const.FORMATS.get(format_choice)
 
-
-        base_width_mm = dimensions[0]
-        base_height_mm = dimensions[1]
+        base_width_mm, base_height_mm = utils.get_initial_dimensions(uploaded_file)
         bleed_w_mm = bleed_dimensions[0] 
         bleed_h_mm = bleed_dimensions[1] 
 
