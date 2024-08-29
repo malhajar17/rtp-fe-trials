@@ -82,6 +82,9 @@ def process_image_larger_than_format(image_bytes, format_width_mm, format_height
             return cropped_image, buffered.getvalue()
         else:
             # Scale down the image to fit within the format while maintaining aspect ratio
+            format_width_px = format_width_px - 10
+            format_height_px = format_height_px - 10
+
             image.thumbnail((format_width_px, format_height_px), Image.LANCZOS)
             diff_w = max(0, format_width_px - image.width)
             diff_h = max(0, format_height_px - image.height)
