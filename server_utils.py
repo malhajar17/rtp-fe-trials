@@ -79,9 +79,9 @@ def resize_with_bleed(image_bytes, width, height, bleed_w,bleed_h):
             "base64_image": base64_image,
             "type": "outpaint",
             "model_params": {
-                "target_resolution": [width, height],
-                "bleed_size_w": bleed_w,
-                "bleed_size_h": bleed_h,
+                "target_resolution": [int(width), int(height)],
+                "bleed_size_w": int(bleed_w),
+                "bleed_size_h": int(bleed_h),
                 "aws_save_name": filename
             }
         }
