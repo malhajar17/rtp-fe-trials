@@ -65,7 +65,7 @@ def download_image(s3_link):
         return None, None
 
 
-def resize_with_bleed(image_bytes, width, height, bleed):
+def resize_with_bleed(image_bytes, width, height, bleed_w,bleed_h):
     # Convert image bytes to a base64 string
     base64_image = base64.b64encode(image_bytes).decode('utf-8')
 
@@ -80,8 +80,8 @@ def resize_with_bleed(image_bytes, width, height, bleed):
             "type": "outpaint",
             "model_params": {
                 "target_resolution": [width, height],
-                "bleed_size_w": bleed,
-                "bleed_size_h": bleed,
+                "bleed_size_w": bleed_w,
+                "bleed_size_h": bleed_h,
                 "aws_save_name": filename
             }
         }

@@ -1,7 +1,7 @@
 import streamlit as st
 from server_utils import generate_flyer_image, remove_background, upscale_image, download_image, resize_with_bleed
 import elements as ui
-import constants as const
+import constants as const  # Import your constants
 from io import BytesIO
 import utils  # Import the utils module
 
@@ -74,15 +74,15 @@ elif service_choice == "Resize with Bleed":
         base_width_mm = st.sidebar.number_input("Base Width (mm)", const.MIN_DIMENSION, value=initial_width_mm)
         base_height_mm = st.sidebar.number_input("Base Height (mm)", const.MIN_DIMENSION, value=initial_height_mm)
 
-        # Calculate the bleed based on the difference between the new dimensions and the initial dimensions
-        bleed_mm = utils.calculate_bleed_from_dimensions(initial_width_mm, initial_height_mm, base_width_mm, base_height_mm)
+        # Separate bleed width and height inputs
+        bleed_w_mm = st.sidebar.number_input("Bleed Width (mm)", 0, 10, 3)
+        bleed_h_mm = st.sidebar.number_input("Bleed Height (mm)", 0, 10, 3)
 
         # Display the final bleed and dimensions
-        st.sidebar.info(f"Bleed: {bleed_mm:.2f} mm")
-        st.sidebar.info(f"Final dimensions with bleed: {base_width_mm} mm x {base_height_mm} mm")
+        st.sidebar.info(f"Final dimensions with bleed: {base_width_mm + 2 * bleed_w_mm} mm x {base_height_mm + 2 * bleed_h_mm} mm")
 
         st.title("Image Resize with Custom Dimensions and Bleed")
-        st.subheader("Upload an image and specify the base dimensions. The app will resize your image and add the bleed.")
+        st.subheader("Upload an image and specify the base dimensions and bleed margin. The app will resize your image and add the bleed.")
 
         if uploaded_file is not None:
             img_bytes = uploaded_file.read()
@@ -91,7 +91,7 @@ elif service_choice == "Resize with Bleed":
                 with st.spinner("Resizing your image with bleed..."):
                     try:
                         # Use the adjusted dimensions for the resize function
-                        resized_image, image_bytes = resize_with_bleed(img_bytes, base_width_mm, base_height_mm, bleed_mm)
+                        resized_image, image_bytes = resize_with_bleed(img_bytes, base_width_mm, base_height_mm, bleed_w_mm, bleed_h_mm)
                         # Convert PIL image to bytes
                         buffered = BytesIO()
                         resized_image.save(buffered, format="PNG")
@@ -111,22 +111,27 @@ elif service_choice == "Resize with Bleed":
                         st.error(f"Error: {str(e)}")
 
     elif resize_type == "Standard Resize":
-        # Import standard formats from constants.py
-        formats = const.FORMATS
-
-        # Select format
-        format_choice = st.sidebar.selectbox("Choose a format", list(formats.keys()))
-
-        # Determine if portrait or paysage
+        # Select orientation first
         orientation = st.sidebar.radio("Choose orientation", ["Portrait", "Paysage"])
 
-        # Get dimensions and bleed based on the selected format
-        selected_format = f"{format_choice.lower()}-{orientation.lower()}"
-        dimensions, bleed_dimensions = formats.get(selected_format, formats['A4-portrait'])
+        # Determine the list of available formats based on the orientation
+        available_formats = [f for f in const.FORMATS.keys() if orientation.lower() in f]
 
-        st.sidebar.info(f"Selected Format: {format_choice} ({orientation})")
-        st.sidebar.info(f"Dimensions: {dimensions[0]}mm x {dimensions[1]}mm")
-        st.sidebar.info(f"Dimensions with Bleed: {bleed_dimensions[0]}mm x {bleed_dimensions[1]}mm")
+        # Select format based on the chosen orientation
+        format_choice = st.sidebar.selectbox("Choose a format", available_formats)
+
+        # Get dimensions and bleed based on the selected format
+        dimensions, bleed_dimensions = const.FORMATS.get(format_choice)
+
+
+        base_width_mm = dimensions[0]
+        base_height_mm = dimensions[1]
+        bleed_w_mm = bleed_dimensions[0] 
+        bleed_h_mm = bleed_dimensions[1] 
+
+        st.sidebar.info(f"Selected Format: {format_choice}")
+        st.sidebar.info(f"Base dimensions: {base_width_mm} mm x {base_height_mm} mm")
+        st.sidebar.info(f"Final dimensions with Bleed: {bleed_dimensions[0]} mm x {bleed_dimensions[1]} mm")
 
         st.title("Standard Image Resize")
         st.subheader("Upload an image and choose a standard format. The app will resize your image to match the selected format and add the bleed.")
@@ -137,8 +142,8 @@ elif service_choice == "Resize with Bleed":
             if st.sidebar.button("Process Image"):
                 with st.spinner("Resizing your image to the selected format..."):
                     try:
-                        # Use the standard format dimensions for the resize function
-                        resized_image, image_bytes = resize_with_bleed(img_bytes, bleed_dimensions[0], bleed_dimensions[1], bleed_dimensions[0] - dimensions[0])
+                        # Use the calculated dimensions for the resize function
+                        resized_image, image_bytes = resize_with_bleed(img_bytes, base_width_mm, base_height_mm, bleed_w_mm, bleed_h_mm)
                         # Convert PIL image to bytes
                         buffered = BytesIO()
                         resized_image.save(buffered, format="PNG")
