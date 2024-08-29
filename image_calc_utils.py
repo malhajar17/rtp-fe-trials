@@ -31,7 +31,7 @@ def process_image_smaller_than_format(image, format_width_mm, format_height_mm, 
     """
     Process an image that is smaller than the selected format by adding bleed.
     """
-    original_width_mm, original_height_mm = get_initial_dimensions(io.BytesIO(image))
+    original_width_mm, original_height_mm = get_initial_dimensions(image)
     bleed_w_mm = (format_width_mm - original_width_mm) / 2
     bleed_h_mm = (format_height_mm - original_height_mm) / 2
 
