@@ -3,17 +3,20 @@ import streamlit as st
 import io
 from server_utils import *
 
-
-def get_initial_dimensions(image_bytes):
+def get_initial_dimensions(uploaded_file):
     """
     Get initial dimensions from the image metadata or use defaults.
     """
-    image = Image.open(io.BytesIO(image_bytes))
-    width_px, height_px = image.size
-    dpi = image.info.get('dpi', (300, 300))
-    dpi_x, dpi_y = dpi
-    initial_width_mm = (width_px / dpi_x) * 25.4
-    initial_height_mm = (height_px / dpi_y) * 25.4
+    if uploaded_file is not None:
+        image = Image.open(uploaded_file)
+        width_px, height_px = image.size
+        dpi = image.info.get('dpi', (300, 300))
+        dpi_x, dpi_y = dpi
+        initial_width_mm = (width_px / dpi_x) * 25.4
+        initial_height_mm = (height_px / dpi_y) * 25.4
+    else:
+        initial_width_mm = 100  
+        initial_height_mm = 150  
     
     return initial_width_mm, initial_height_mm
 
