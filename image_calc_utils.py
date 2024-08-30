@@ -31,8 +31,8 @@ def process_image_smaller_than_format(image_bytes, format_width_px, format_heigh
     Process an image that is smaller than the selected format by adding bleed.
     """
     _, _, original_width_px, original_height_px = get_initial_dimensions(image_bytes)
-    bleed_w_px = (format_width_px - original_width_px) / 2
-    bleed_h_px = (format_height_px - original_height_px) / 2
+    bleed_w_px = (format_width_px - original_width_px) - 107
+    bleed_h_px = (format_height_px - original_height_px) - 103
 
     resized_image, image_bytes = resize_with_bleed_server(image_bytes, original_width_px, original_height_px, bleed_w_px, bleed_h_px, resize_with_bleed_func)
     return resized_image, image_bytes
