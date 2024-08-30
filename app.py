@@ -122,7 +122,9 @@ elif service_choice == "Resize with Bleed":
 
             st.sidebar.info(f"Selected Format: {format_choice}")
             st.sidebar.info(f"Base dimensions: {int(initial_width_mm)} mm x {int(initial_height_mm)} mm")
-            st.sidebar.info(f"Final dimensions with Bleed: {format_width_mm} mm x {format_height_mm} mm")
+            st.sidebar.info(f"Final dimensions with Bleed mm: {format_width_mm} mm x {format_height_mm} mm")
+
+            
 
             if st.sidebar.button("Process Image"):
                 with st.spinner("Processing your image..."):

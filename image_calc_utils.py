@@ -130,9 +130,9 @@ def process_and_display_image(img_bytes, format_width_px, format_height_px, resi
         # Set DPI to 300 before saving the image
         resized_image = set_image_dpi(resized_image, dpi=(300, 300))
 
-        # Save the image to bytes
+        # Save the image to bytes with 300 DPI
         img_byte_arr = io.BytesIO()
-        resized_image.save(img_byte_arr, format='PNG')
+        resized_image.save(img_byte_arr, format='PNG', dpi=(300, 300))
         img_byte_arr.seek(0)
         image_bytes = img_byte_arr.getvalue()
 
