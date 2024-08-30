@@ -6,7 +6,7 @@ from server_utils import *
 
 def get_initial_dimensions(image_bytes):
     """
-    Get initial dimensions from the image metadata or use defaults.
+    Get initial dimensions from the image in mm based on 300 DPI or the image's actual DPI.
     """
     try:
         with Image.open(io.BytesIO(image_bytes)) as image:
@@ -15,29 +15,29 @@ def get_initial_dimensions(image_bytes):
             dpi_x, dpi_y = dpi
             initial_width_mm = (width_px / dpi_x) * 25.4
             initial_height_mm = (height_px / dpi_y) * 25.4
-        return initial_width_mm, initial_height_mm
+        return initial_width_mm, initial_height_mm, width_px, height_px
     except Exception as e:
         raise ValueError(f"Failed to get image dimensions: {str(e)}")
 
-def resize_with_bleed_server(image_bytes, width_mm, height_mm, bleed_w_mm, bleed_h_mm, resize_with_bleed_func):
+def resize_with_bleed_server(image_bytes, width_px, height_px, bleed_w_px, bleed_h_px, resize_with_bleed_func):
     """
-    Calls the server function to resize the image and add bleed.
+    Calls the server function to resize the image and add bleed in pixels.
     """
-    resized_image, image_bytes = resize_with_bleed_func(image_bytes, width_mm, height_mm, bleed_w_mm, bleed_h_mm)
+    resized_image, image_bytes = resize_with_bleed_func(image_bytes, width_px, height_px, bleed_w_px, bleed_h_px)
     return resized_image, image_bytes
 
-def process_image_smaller_than_format(image_bytes, format_width_mm, format_height_mm, resize_with_bleed_func):
+def process_image_smaller_than_format(image_bytes, format_width_px, format_height_px, resize_with_bleed_func):
     """
     Process an image that is smaller than the selected format by adding bleed.
     """
-    original_width_mm, original_height_mm = get_initial_dimensions(image_bytes)
-    bleed_w_mm = (format_width_mm - original_width_mm) / 2
-    bleed_h_mm = (format_height_mm - original_height_mm) / 2
+    _, _, original_width_px, original_height_px = get_initial_dimensions(image_bytes)
+    bleed_w_px = (format_width_px - original_width_px) 
+    bleed_h_px = (format_height_px - original_height_px) 
 
-    resized_image, image_bytes = resize_with_bleed_server(image_bytes, original_width_mm, original_height_mm, bleed_w_mm, bleed_h_mm, resize_with_bleed_func)
+    resized_image, image_bytes = resize_with_bleed_server(image_bytes, original_width_px, original_height_px, bleed_w_px, bleed_h_px, resize_with_bleed_func)
     return resized_image, image_bytes
 
-def process_image_larger_than_format(image_bytes, format_width_mm, format_height_mm, resize_option, resize_with_bleed_func):
+def process_image_larger_than_format(image_bytes, format_width_px, format_height_px, resize_option, resize_with_bleed_func):
     """
     Process an image that is larger than the selected format, allowing for either cropping or resizing with bleed.
     This function maintains the aspect ratio, keeps the DPI at 300, and fills the gap with bleed if necessary.
@@ -48,10 +48,6 @@ def process_image_larger_than_format(image_bytes, format_width_mm, format_height
         if original_dpi != (300, 300):
             image = image.resize(image.size, resample=Image.LANCZOS)
             image.info['dpi'] = (300, 300)
-
-        # Convert format dimensions from mm to pixels
-        format_width_px = int((format_width_mm / 25.4) * 300)
-        format_height_px = int((format_height_mm / 25.4) * 300)
 
         # Resize the image so that the smaller dimension fits the format
         aspect_ratio_image = image.width / image.height
@@ -82,7 +78,7 @@ def process_image_larger_than_format(image_bytes, format_width_mm, format_height
             return cropped_image, buffered.getvalue()
         else:
             # Slightly reduce the image size to create space for bleed
-            reduction_factor = 0.9  # 2% smaller
+            reduction_factor = 0.9  # Reduce size by 10% to create space for bleed
             target_width_px = int(format_width_px * reduction_factor)
             target_height_px = int(format_height_px * reduction_factor)
 
@@ -105,22 +101,23 @@ def process_image_larger_than_format(image_bytes, format_width_mm, format_height
 
             # Add bleed to fill the gap
             final_image, final_image_bytes = resize_with_bleed_server(
-                resized_image_bytes, resized_width_px, resized_height_px, (diff_w / 2)+ (format_width_px * 0.05) , (diff_h / 2) + (format_height_px * 0.05), resize_with_bleed_func
+                resized_image_bytes, resized_width_px, resized_height_px, diff_w / 2, diff_h / 2, resize_with_bleed_func
             )
             return final_image, final_image_bytes
-        
-def process_and_display_image(img_bytes, width_mm, height_mm, resize_option):
-    """
-    Handles the logic for processing the image based on the user-defined width and height.
-    """
-    original_width_mm, original_height_mm = img_utils.get_initial_dimensions(img_bytes)
 
-    if original_width_mm < width_mm and original_height_mm < height_mm:
+def process_and_display_image(img_bytes, format_width_px, format_height_px, resize_option):
+    """
+    Handles the logic for processing the image based on the user-defined width and height in pixels.
+    """
+    # Get initial dimensions in pixels
+    _, _, initial_width_px, initial_height_px = get_initial_dimensions(img_bytes)
+
+    if initial_width_px < format_width_px and initial_height_px < format_height_px:
         # Image is smaller than the format, add bleed to fill the format
-        resized_image, image_bytes = img_utils.process_image_smaller_than_format(img_bytes, width_mm, height_mm, resize_with_bleed)
+        resized_image, image_bytes = process_image_smaller_than_format(img_bytes, format_width_px, format_height_px, resize_with_bleed)
     else:
         # Image is larger than the format, use the chosen resize option
-        resized_image, image_bytes = img_utils.process_image_larger_than_format(img_bytes, width_mm, height_mm, resize_option, resize_with_bleed)
+        resized_image, image_bytes = process_image_larger_than_format(img_bytes, format_width_px, format_height_px, resize_option, resize_with_bleed)
 
     if resized_image:
         st.success("Image processed successfully!")
@@ -133,3 +130,4 @@ def process_and_display_image(img_bytes, width_mm, height_mm, resize_option):
         )
     else:
         st.error("Could not process the image.")
+

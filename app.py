@@ -74,7 +74,7 @@ elif service_choice == "Resize with Bleed":
         if uploaded_file is not None:
             img_bytes = uploaded_file.read()  # Read the file only once and reuse the bytes
 
-            initial_width_mm, initial_height_mm = img_utils.get_initial_dimensions(img_bytes)
+            initial_width_mm, initial_height_mm, initial_width_px, initial_height_px = img_utils.get_initial_dimensions(img_bytes)
 
             # Base dimensions input by user
             base_width_mm = st.sidebar.number_input("Base Width (mm)", min_value=float(const.MIN_DIMENSION), value=float(initial_width_mm), step=1.0)
@@ -94,7 +94,10 @@ elif service_choice == "Resize with Bleed":
         if uploaded_file is not None:
             img_bytes = uploaded_file.read()  # Read the file only once and reuse the bytes
 
-            initial_width_mm, initial_height_mm = img_utils.get_initial_dimensions(img_bytes)
+            # Get initial dimensions in both mm and pixels
+            initial_width_mm, initial_height_mm, initial_width_px, initial_height_px = img_utils.get_initial_dimensions(img_bytes)
+            
+            st.sidebar.info(f"width/helght in pixels  {initial_width_px} X {initial_height_px}")
 
             # Select orientation first
             orientation = st.sidebar.radio("Choose orientation", ["Portrait", "Paysage"])
@@ -110,19 +113,23 @@ elif service_choice == "Resize with Bleed":
             format_width_mm = bleed_dimensions[0]
             format_height_mm = bleed_dimensions[1]
 
+            # Convert format dimensions to pixels at 300 DPI
+            format_width_px = int((format_width_mm / 25.4) * 300)
+            format_height_px = int((format_height_mm / 25.4) * 300)
+
             # Check if image is larger than the specified dimensions
-            if initial_width_mm > format_width_mm or initial_height_mm > format_height_mm:
+            if initial_width_px > format_width_px or initial_height_px > format_height_px:
                 resize_option = st.sidebar.radio("Image is larger than specified dimensions. Choose an option:", ["Scale Down and Fill Bleed", "Crop Image"])
             else:
                 resize_option = None  # No need to choose, image will just be resized
-                
+
             st.sidebar.info(f"Selected Format: {format_choice}")
             st.sidebar.info(f"Base dimensions: {int(initial_width_mm)} mm x {int(initial_height_mm)} mm")
             st.sidebar.info(f"Final dimensions with Bleed: {format_width_mm} mm x {format_height_mm} mm")
 
             if st.sidebar.button("Process Image"):
                 with st.spinner("Processing your image..."):
-                    img_utils.process_and_display_image(img_bytes, format_width_mm, format_height_mm, resize_option)
+                    img_utils.process_and_display_image(img_bytes, format_width_px, format_height_px, resize_option)
 
 
 elif service_choice == "Remove Background":
