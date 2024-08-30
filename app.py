@@ -96,9 +96,6 @@ elif service_choice == "Resize with Bleed":
 
             # Get initial dimensions in both mm and pixels
             initial_width_mm, initial_height_mm, initial_width_px, initial_height_px = img_utils.get_initial_dimensions(img_bytes)
-            
-            st.sidebar.info(f"width/helght in pixels  {initial_width_px} X {initial_height_px}")
-
             # Select orientation first
             orientation = st.sidebar.radio("Choose orientation", ["Portrait", "Paysage"])
 
