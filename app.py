@@ -107,8 +107,8 @@ elif service_choice == "Resize with Bleed":
 
             # Get dimensions and bleed based on the selected format
             dimensions, bleed_dimensions = const.FORMATS.get(format_choice)
-            format_width_mm = bleed_dimensions[0]
-            format_height_mm = bleed_dimensions[1]
+            format_width_mm = dimensions[0]
+            format_height_mm = dimensions[1]
 
             # Convert format dimensions to pixels at 300 DPI
             format_width_px = int((format_width_mm / 25.4) * 300)

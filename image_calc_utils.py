@@ -31,8 +31,8 @@ def process_image_smaller_than_format(image_bytes, format_width_px, format_heigh
     Process an image that is smaller than the selected format by adding bleed.
     """
     _, _, original_width_px, original_height_px = get_initial_dimensions(image_bytes)
-    bleed_w_px = (format_width_px - original_width_px) - 107
-    bleed_h_px = (format_height_px - original_height_px) - 103
+    bleed_w_px = (format_width_px - original_width_px) 
+    bleed_h_px = (format_height_px - original_height_px) 
 
     resized_image, image_bytes = resize_with_bleed_server(image_bytes, original_width_px, original_height_px, bleed_w_px, bleed_h_px, resize_with_bleed_func)
     return resized_image, image_bytes
@@ -104,6 +104,13 @@ def process_image_larger_than_format(image_bytes, format_width_px, format_height
                 resized_image_bytes, resized_width_px, resized_height_px, diff_w / 2, diff_h / 2, resize_with_bleed_func
             )
             return final_image, final_image_bytes
+        
+def set_image_dpi(image, dpi=(300, 300)):
+    """
+    Set the DPI of the image.
+    """
+    image.info['dpi'] = dpi
+    return image
 
 def process_and_display_image(img_bytes, format_width_px, format_height_px, resize_option):
     """
@@ -120,6 +127,15 @@ def process_and_display_image(img_bytes, format_width_px, format_height_px, resi
         resized_image, image_bytes = process_image_larger_than_format(img_bytes, format_width_px, format_height_px, resize_option, resize_with_bleed)
 
     if resized_image:
+        # Set DPI to 300 before saving the image
+        resized_image = set_image_dpi(resized_image, dpi=(300, 300))
+
+        # Save the image to bytes
+        img_byte_arr = io.BytesIO()
+        resized_image.save(img_byte_arr, format='PNG')
+        img_byte_arr.seek(0)
+        image_bytes = img_byte_arr.getvalue()
+
         st.success("Image processed successfully!")
         st.image(resized_image, caption="Processed Image", use_column_width=True)
         st.download_button(
