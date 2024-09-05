@@ -29,7 +29,7 @@ def upscale_image(service_url, image_bytes, upscale_factor):
             "model_params": {
                 "upscale_factor": upscale_factor,
                 "aws_save_name": filename,
-                "upscaler_model_name":"realesr-general-x4v3"
+                "upscaler_model_name":"realesr-animevideov3"
             },
             
         }
