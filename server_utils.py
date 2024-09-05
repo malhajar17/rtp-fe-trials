@@ -20,7 +20,7 @@ def upscale_image(service_url, image_bytes, upscale_factor):
     # Get the current timestamp and format the filename
     timestamp = datetime.now().strftime("%Y%m%d%H%M%S")
     filename = f"{timestamp}_upscaled_image.png"
-    if upscale_factor < 2.1:
+    if upscale_factor < 2.000001:
         # Define the payload for upscaling
         payload = {
             "input": {
