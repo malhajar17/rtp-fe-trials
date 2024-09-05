@@ -20,20 +20,36 @@ def upscale_image(service_url, image_bytes, upscale_factor):
     # Get the current timestamp and format the filename
     timestamp = datetime.now().strftime("%Y%m%d%H%M%S")
     filename = f"{timestamp}_upscaled_image.png"
-
-    # Define the payload for upscaling
-    payload = {
-        "input": {
-            "base64_image": base64_image,
-            "type": "upscale",
-            "model_params": {
-                "upscale_factor": upscale_factor,
-                "aws_save_name": filename,
-                "upscaler_model_name":"realesr-animevideov3"
-            },
-            
+    if upscale_factor < 2.1:
+        # Define the payload for upscaling
+        payload = {
+            "input": {
+                "base64_image": base64_image,
+                "type": "upscale",
+                "model_params": {
+                    "upscale_factor": upscale_factor,
+                    "aws_save_name": filename,
+                    "upscaler_model_name":"RealESRGAN_x2plus",
+                    "tile": 0
+                },
+                
+            }
         }
-    }
+    else:
+                # Define the payload for upscaling
+        payload = {
+            "input": {
+                "base64_image": base64_image,
+                "type": "upscale",
+                "model_params": {
+                    "upscale_factor": upscale_factor,
+                    "aws_save_name": filename,
+                    "upscaler_model_name":"RealESRGAN_x4plus",
+                    "tile": 1200
+                },
+                
+            }
+        }
 
     # Run the request
     endpoint = runpod.Endpoint("vdazldfyhyb2kr")
