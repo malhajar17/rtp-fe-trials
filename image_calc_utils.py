@@ -30,7 +30,8 @@ def process_image_smaller_than_format(image_bytes, format_width_px, format_heigh
     """
     Process an image that is smaller than the selected format by adding bleed.
     """
-    _, _, original_width_px, original_height_px = get_initial_dimensions(image_bytes)
+    image = Image.open(BytesIO(image_bytes))
+    original_width_px, original_height_px = image.size
     bleed_w_px = (format_width_px - original_width_px) 
     bleed_h_px = (format_height_px - original_height_px) 
 
@@ -117,7 +118,8 @@ def process_and_display_image(img_bytes, format_width_px, format_height_px, resi
     Handles the logic for processing the image based on the user-defined width and height in pixels.
     """
     # Get initial dimensions in pixels
-    _, _, initial_width_px, initial_height_px = get_initial_dimensions(img_bytes)
+    image = Image.open(BytesIO(img_bytes))
+    initial_width_px, initial_height_px = image.size
 
     if initial_width_px < format_width_px and initial_height_px < format_height_px:
         # Image is smaller than the format, add bleed to fill the format
