@@ -9,7 +9,7 @@ import runpod
 import base64
 from utils import *
 runpod.api_key = os.environ.get("RUNPOD_API_KEY")
-
+IDEOGRAM_API_KEY = os.environ.getenv('IDEOGRAM_API_KEY')
 # Define the endpoint ID
 endpoint = runpod.Endpoint("vdazldfyhyb2kr")
 
@@ -238,7 +238,7 @@ def generate_with_ideogram(prompt, aspect_ratio, style, color_palette):
     }
 
     headers = {
-        "Api-Key": os.environ.getenv('IDEOGRAM_API_KEY'),  # Replace with your actual API key
+        "Api-Key": IDEOGRAM_API_KEY,  # Replace with your actual API key
         "Content-Type": "application/json"
     }
 
