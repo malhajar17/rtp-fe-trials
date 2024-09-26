@@ -238,7 +238,7 @@ def generate_with_ideogram(prompt, aspect_ratio, style, color_palette):
     }
 
     headers = {
-        "Api-Key":os.environ.get('IDEOGRAM_API_KEY'),  # Replace with your actual API key
+        "Api-Key": st.secrets["IDEOGRAM_API_KEY"],  # Replace with your actual API key
         "Content-Type": "application/json"
     }
 
