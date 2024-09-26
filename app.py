@@ -1,5 +1,5 @@
 import streamlit as st
-from server_utils import generate_flyer_image, remove_background, upscale_image, download_image, resize_with_bleed
+from server_utils import generate_flyer_image, generate_with_ideogram, remove_background, upscale_image, download_image, resize_with_bleed
 import elements as ui
 import constants as const  # Import your constants
 from io import BytesIO
@@ -27,7 +27,7 @@ st.sidebar.title("Image Processing Controls")
 uploaded_file = st.sidebar.file_uploader("Choose an image...", ["jpg", "png", "jpeg"])
 
 # Select service: Upscale or Resize with Bleed
-service_choice = st.sidebar.radio("Choose a service", ["Upscale Image", "Resize with Bleed", "Remove Background", "Generate Flyer"])
+service_choice = st.sidebar.radio("Choose a service", ["Upscale Image", "Resize with Bleed", "Remove Background", "Generate Flyer","Generate with Ideogram"])
 
 if service_choice == "Upscale Image":
     upscale_factor = st.sidebar.slider("Upscale Factor", const.MIN_UPSCALE_FACTOR, const.MAX_UPSCALE_FACTOR, const.DEFAULT_UPSCALE_FACTOR)
@@ -199,5 +199,152 @@ elif service_choice == "Generate Flyer":
                         )
                     else:
                         st.error("Could not download the flyer image.")
+                except ValueError as e:
+                    st.error(f"Error: {str(e)}")
+
+elif service_choice == "Generate with Ideogram":
+
+    # Initialize session state variables
+    if 'selected_ratio' not in st.session_state:
+        st.session_state.selected_ratio = None
+    if 'width' not in st.session_state:
+        st.session_state.width = 200
+    if 'height' not in st.session_state:
+        st.session_state.height = 200
+    if 'selected_style' not in st.session_state:
+        st.session_state.selected_style = 'AUTO'
+    if 'selected_palette' not in st.session_state:
+        st.session_state.selected_palette = None
+
+    def update_ratio(choice):
+        st.session_state.selected_ratio = choice
+        ratio = const.PROTRAIT_RATIOS.get(choice) or const.LANDSCAPE_RATIOS.get(choice)
+        if ratio:
+            # Check if it is a portrait ratio
+            if const.PROTRAIT_RATIOS.get(choice):
+                st.session_state.width = 200  # Fixed width for portrait
+                st.session_state.height = int(200 * (ratio[1] / ratio[0]))  # Adjust height for portrait
+            else:
+                st.session_state.height = 200  # Fixed height for landscape
+                st.session_state.width = int(200 * (ratio[0] / ratio[1]))  # Adjust width for landscape
+        else:
+            st.write("Ratio not found")  # Debugging statement
+
+    st.title("Generate with Ideogram")
+
+    # Create columns for layout
+    col1, col2, col3 = st.columns([1, 1, 3])
+
+    # Portrait ratios in the first column
+    with col1:
+        st.markdown('<div class="ratios"><h4>Portrait</h4></div>', unsafe_allow_html=True)
+        for label, _ in const.PROTRAIT_RATIOS.items():
+            if st.button(label, key=f'portrait_{label}'):
+                update_ratio(label)
+
+    # Landscape ratios in the second column
+    with col2:
+        st.markdown('<div class="ratios"><h4>Landscape</h4></div>', unsafe_allow_html=True)
+        for label, _ in const.LANDSCAPE_RATIOS.items():
+            if st.button(label, key=f'landscape_{label}'):
+                update_ratio(label)
+
+    # Display dynamic rectangle reflecting the selected ratio in the third column
+    with col3:
+        width = st.session_state.width
+        height = st.session_state.height
+        selected_ratio = st.session_state.selected_ratio
+
+        st.markdown(f"""
+            <div class="ratio-container">
+                <div class="ratio-box" style="
+                    width:{width}px; 
+                    height:{height}px; 
+                    background-color: #1e1e1e; 
+                    border: 2px solid #fff; 
+                    display: flex; 
+                    justify-content: center; 
+                    align-items: center; 
+                    color: white;">
+                    {selected_ratio or "Select a ratio"}
+                </div>
+            </div>
+        """, unsafe_allow_html=True)
+
+    # Add style selection
+    st.subheader("Select a Style")
+    st.session_state.selected_style = st.selectbox("Choose a style:", const.styles)
+
+    # Add color palette selection with demo
+    st.subheader("Select a Color Palette")
+    palette_choice = st.radio("Choose a color palette:", const.palettes)
+
+    # Display color swatches for the selected palette
+    st.markdown("### Color Palette Preview")
+    colors = const.palette_colors.get(palette_choice, [])
+    swatch_html = "".join([
+        f"<div style='display:inline-block;width:30px;height:30px;background-color:{color};margin-right:5px;border-radius:4px;'></div>"
+        for color in colors
+    ])
+    st.markdown(swatch_html, unsafe_allow_html=True)
+
+    # Update selected palette in session state
+    st.session_state.selected_palette = palette_choice
+
+    # Prompting user to generate ideogram
+    ideogram_prompt = st.text_area("Enter your ideogram prompt here:", "Your ideogram content goes here.")
+
+    if st.session_state.selected_ratio and ideogram_prompt:
+        if st.button("Generate Ideogram"):
+            with st.spinner("Generating your ideogram..."):
+                try:
+                    # Map your selected ratio to the API's expected aspect ratio format
+                    aspect_ratio_mapping = {
+                        "1:3": "ASPECT_1_3",
+                        "1:2": "ASPECT_1_2",
+                        "9:16": "ASPECT_9_16",
+                        "10:16": "ASPECT_10_16",
+                        "2:3": "ASPECT_2_3",
+                        "3:4": "ASPECT_3_4",
+                        "4:5": "ASPECT_4_5",
+                        "3:1": "ASPECT_3_1",
+                        "2:1": "ASPECT_2_1",
+                        "16:9": "ASPECT_16_9",
+                        "16:10": "ASPECT_16_10",
+                        "3:2": "ASPECT_3_2",
+                        "4:3": "ASPECT_4_3",
+                        "5:4": "ASPECT_5_4",
+                    }
+
+                    selected_ratio_api = aspect_ratio_mapping.get(st.session_state.selected_ratio)
+                    print(st.session_state.selected_palette)
+                    if not selected_ratio_api:
+                        st.error("Selected aspect ratio is not supported.")
+                        raise ValueError("Invalid aspect ratio.")
+
+                    # Call the generate_with_ideogram function
+                    ideogram_image, image_info = generate_with_ideogram(
+                        ideogram_prompt,
+                        selected_ratio_api,
+                        st.session_state.selected_style,
+                        st.session_state.selected_palette
+                    )
+
+                    # Convert PIL image to bytes
+                    buffered = BytesIO()
+                    ideogram_image.save(buffered, format="PNG")
+                    image_bytes = buffered.getvalue()
+
+                    if ideogram_image:
+                        st.success("Ideogram generated successfully!")
+                        st.image(ideogram_image, caption="Generated Ideogram", use_column_width=True)
+                        st.download_button(
+                            label="Download Ideogram",
+                            data=image_bytes,
+                            file_name="ideogram.png",
+                            mime="image/png"
+                        )
+                    else:
+                        st.error("Could not download the ideogram image.")
                 except ValueError as e:
                     st.error(f"Error: {str(e)}")

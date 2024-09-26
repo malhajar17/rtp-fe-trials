@@ -218,3 +218,51 @@ def generate_flyer_image(prompt):
         return image, object_key
     else:
         raise ValueError("Output does not contain a valid image URL")
+    
+
+def generate_with_ideogram(prompt, aspect_ratio, style, color_palette):
+
+    url = "https://api.ideogram.ai/generate"
+
+    payload = {
+        "image_request": {
+            "prompt": prompt,
+            "aspect_ratio": aspect_ratio,  # Use the correct aspect ratio format
+            "model": "V_2",
+            "magic_prompt_option": "AUTO",
+            "style": style.upper() ,
+            "color_palette": {
+                "name": color_palette.upper() 
+            }
+        }
+    }
+
+    headers = {
+        "Api-Key": os.getenv('IDEOGRAM_API_KEY'),  # Replace with your actual API key
+        "Content-Type": "application/json"
+    }
+
+    response = requests.post(url, json=payload, headers=headers)
+
+    if response.status_code != 200:
+        raise ValueError(f"API request failed with status code {response.status_code}: {response.text}")
+
+    response_json = response.json()
+
+    # Check if the response contains the 'data' field
+    if 'data' not in response_json or not response_json['data']:
+        raise ValueError("No image data found in the response.")
+
+    # Get the first image URL
+    image_info = response_json['data'][0]
+    image_url = image_info['url']
+
+    # Download the image
+    image_response = requests.get(image_url)
+    if image_response.status_code != 200:
+        raise ValueError(f"Failed to download image from {image_url}")
+
+    image = Image.open(BytesIO(image_response.content))
+
+    # Return the image and additional info if needed
+    return image, image_info

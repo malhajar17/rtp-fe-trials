@@ -45,3 +45,39 @@ FORMATS = {
     'Bookmarks-portrait': [[54,200], [58, 204]],
     'Bookmarks-paysage': [[200,54], [204, 58]],
 }
+
+# List of ratios
+PROTRAIT_RATIOS = {
+    "1:3": (1, 3),
+    "1:2": (1, 2),
+    "9:16": (9, 16),
+    "10:16": (10, 16),
+    "2:3": (2, 3),
+    "3:4": (3, 4),
+    "4:5": (4, 5),
+}
+
+LANDSCAPE_RATIOS = {
+    "3:1": (3, 1),
+    "2:1": (2, 1),
+    "16:9": (16, 9),
+    "16:10": (16, 10),
+    "3:2": (3, 2),
+    "4:3": (4, 3),
+    "5:4": (5, 4),
+}
+
+# Define the styles and color palettes
+styles = ["Auto", "General", "Realistic", "Design", "Render_3d", "Anime"]
+palettes = ["Ember", "Fresh", "Jungle", "Magic", "Mosaic", "Pastel", "Ultramarine"]
+
+# Define color swatches for each palette with 5 colors
+palette_colors = {
+    "Ember": ["#FF4500", "#FF8C00", "#FFD700", "#FF6347", "#FF7F50"],
+    "Fresh": ["#00FA9A", "#7CFC00", "#ADFF2F", "#32CD32", "#98FB98"],
+    "Jungle": ["#006400", "#228B22", "#32CD32", "#6B8E23", "#556B2F"],
+    "Magic": ["#8A2BE2", "#9400D3", "#9932CC", "#BA55D3", "#DDA0DD"],
+    "Mosaic": ["#FFD700", "#ADFF2F", "#00FFFF", "#FF69B4", "#1E90FF"],
+    "Pastel": ["#FFB6C1", "#FFDAB9", "#E6E6FA", "#B0E0E6", "#FFFACD"],
+    "Ultramarine": ["#4169E1", "#0000CD", "#000080", "#4682B4", "#5F9EA0"],
+}
