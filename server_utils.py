@@ -2,14 +2,14 @@ import requests
 from PIL import Image
 from io import BytesIO
 import os 
-
+import streamlit as st
 import time
 from datetime import datetime
 import runpod
 import base64
 from utils import *
 runpod.api_key = os.environ.get("RUNPOD_API_KEY")
-IDEOGRAM_API_KEY = os.environ.getenv('IDEOGRAM_API_KEY')
+
 # Define the endpoint ID
 endpoint = runpod.Endpoint("vdazldfyhyb2kr")
 
@@ -230,7 +230,7 @@ def generate_with_ideogram(prompt, aspect_ratio, style, color_palette):
             "aspect_ratio": aspect_ratio,  # Use the correct aspect ratio format
             "model": "V_2",
             "magic_prompt_option": "AUTO",
-            "style": style.upper() ,
+            "style": style,
             "color_palette": {
                 "name": color_palette.upper() 
             }
@@ -238,7 +238,7 @@ def generate_with_ideogram(prompt, aspect_ratio, style, color_palette):
     }
 
     headers = {
-        "Api-Key": IDEOGRAM_API_KEY,  # Replace with your actual API key
+        "Api-Key": st.secrets['IDEOGRAM_API_KEY'],  # Replace with your actual API key
         "Content-Type": "application/json"
     }
 
