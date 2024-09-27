@@ -49,12 +49,10 @@ FORMATS = {
 # List of ratios
 PROTRAIT_RATIOS = {
     "1:3": (1, 3),
-    "1:2": (1, 2),
     "9:16": (9, 16),
-    "10:16": (10, 16),
     "2:3": (2, 3),
     "3:4": (3, 4),
-    "4:5": (4, 5),
+    "10:16": (10, 16),
 }
 
 LANDSCAPE_RATIOS = {
@@ -64,7 +62,6 @@ LANDSCAPE_RATIOS = {
     "16:10": (16, 10),
     "3:2": (3, 2),
     "4:3": (4, 3),
-    "5:4": (5, 4),
 }
 
 # Define the styles and color palettes
