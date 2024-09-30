@@ -8,6 +8,8 @@ from datetime import datetime
 import runpod
 import base64
 from utils import *
+from openai import OpenAI
+
 runpod.api_key = os.environ.get("RUNPOD_API_KEY")
 
 # Define the endpoint ID
@@ -220,22 +222,39 @@ def generate_flyer_image(prompt):
         raise ValueError("Output does not contain a valid image URL")
     
 
-def generate_with_ideogram(prompt, aspect_ratio, style, color_palette):
+def generate_with_ideogram(prompt, aspect_ratio, style, color_palette,seed=-1,magic_prompt_option="AUTO"):
 
     url = "https://api.ideogram.ai/generate"
-
-    payload = {
-        "image_request": {
-            "prompt": prompt,
-            "aspect_ratio": aspect_ratio,  # Use the correct aspect ratio format
-            "model": "V_2",
-            "magic_prompt_option": "AUTO",
-            "style": style,
-            "color_palette": {
-                "name": color_palette.upper() 
+    
+    if seed == -1:
+        payload = {
+            "image_request": {
+                "prompt": prompt,
+                "aspect_ratio": aspect_ratio,  # Use the correct aspect ratio format
+                "model": "V_2",
+                "magic_prompt_option": magic_prompt_option,
+                "style": style,
+                "color_palette": {
+                    "name": color_palette.upper() 
+                }
             }
         }
-    }
+    else:
+        payload = {
+            "image_request": {
+                "prompt": prompt,
+                "aspect_ratio": aspect_ratio,  # Use the correct aspect ratio format
+                "model": "V_2",
+                "magic_prompt_option": magic_prompt_option,
+                "style": style,
+                "seed":seed,
+                "color_palette": {
+                    "name": color_palette.upper() 
+                }
+            }
+        }
+    if color_palette == "None":
+        del payload["image_request"]["color_palette"]
 
     headers = {
         "Api-Key": st.secrets["IDEOGRAM_API_KEY"],  # Replace with your actual API key
@@ -265,4 +284,46 @@ def generate_with_ideogram(prompt, aspect_ratio, style, color_palette):
     image = Image.open(BytesIO(image_response.content))
 
     # Return the image and additional info if needed
-    return image, image_info
+    return image, image_info['seed'] , image_info['prompt']
+
+def modify_prompt(prompt,modification_prompt):
+    client = OpenAI(
+        api_key=os.environ.get("OPENAI_API_KEY"), 
+        organization='org-l0RJJNv3Mp77MpQPjZyMqubj'
+    )
+    messages=[
+            {"role": "system", "content": "You are a helpful assistant."},
+            {
+                "role": "user",
+                "content": f"""You are an assistant that specializes in modifying prompts based on specific instructions. You will receive two pieces of information:
+
+                    1. **Original Prompt**: The initial prompt that needs to be modified.
+                    2. **Modification Prompt**: Instructions detailing how to modify the original prompt.
+
+                    **Your Task:**
+                    Apply the changes specified in the **Modification Prompt** to the **Original Prompt**. Ensure that only the details mentioned in the modification are altered, and the rest of the original prompt remains exactly the same.
+
+                    **Example:**
+
+                    - **Original Prompt**: "Generate a flyer that has a pink palette, minimalistic, and has the text 'Welcome to Printoclock!!'"
+                    - **Modification Prompt**: "Change the text to 'Welcome to our nice company'"
+                    - **Result**: "Generate a flyer that has a pink palette, minimalistic, and has the text 'Welcome to our nice company'"
+
+                    **Now, please process the following:**
+
+                    **Original Prompt**: "{prompt}"
+
+                    **Modification Prompt**: "{modification_prompt}"
+                """
+            }
+        ]
+    completion = client.chat.completions.create(
+        model="gpt-4o",
+        messages=messages,
+        temperature=0.1
+    )
+    response = completion.choices[0].message.content
+        # Split the string by double quotes and take the part in between the first and last quotes
+    cleaned_response = response.split('"', 1)[1].rsplit('"', 1)[0]
+    print(cleaned_response)
+    return response

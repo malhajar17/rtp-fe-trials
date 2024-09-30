@@ -4,3 +4,4 @@ Pillow
 runpod
 boto3
 fpdf
+openai

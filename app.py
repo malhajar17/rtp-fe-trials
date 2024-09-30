@@ -1,5 +1,5 @@
 import streamlit as st
-from server_utils import generate_flyer_image, generate_with_ideogram, remove_background, upscale_image, download_image, resize_with_bleed
+from server_utils import *
 import elements as ui
 import constants as const  # Import your constants
 from io import BytesIO
@@ -207,6 +207,8 @@ elif service_choice == "Generate with Ideogram":
     # Initialize session state variables
     if 'selected_ratio' not in st.session_state:
         st.session_state.selected_ratio = None
+    if 'selected_ratio_api' not in st.session_state:
+        st.session_state.selected_ratio_api = None
     if 'width' not in st.session_state:
         st.session_state.width = 200
     if 'height' not in st.session_state:
@@ -215,6 +217,14 @@ elif service_choice == "Generate with Ideogram":
         st.session_state.selected_style = 'AUTO'
     if 'selected_palette' not in st.session_state:
         st.session_state.selected_palette = None
+    if 'ideogram_image' not in st.session_state:
+        st.session_state.ideogram_image = None  # Store the generated ideogram
+    if 'modified_image' not in st.session_state:
+        st.session_state.modified_image = None  # Store the modified image
+    if 'seed' not in st.session_state:
+        st.session_state.seed = 0  # Store the modified image
+    if 'returned_prompt' not in st.session_state:
+        st.session_state.returned_prompt = ""  # Store the modified image
 
     def update_ratio(choice):
         st.session_state.selected_ratio = choice
@@ -294,43 +304,34 @@ elif service_choice == "Generate with Ideogram":
     # Prompting user to generate ideogram
     ideogram_prompt = st.text_area("Enter your ideogram prompt here:", "Your ideogram content goes here.")
 
+    # Check if the ratio and prompt are selected
     if st.session_state.selected_ratio and ideogram_prompt:
         if st.button("Generate Ideogram"):
             with st.spinner("Generating your ideogram..."):
                 try:
-                    # Map your selected ratio to the API's expected aspect ratio format
-                    aspect_ratio_mapping = {
-                        "1:3": "ASPECT_1_3",
-                        "1:2": "ASPECT_1_2",
-                        "9:16": "ASPECT_9_16",
-                        "10:16": "ASPECT_10_16",
-                        "2:3": "ASPECT_2_3",
-                        "3:4": "ASPECT_3_4",
-                        "4:5": "ASPECT_4_5",
-                        "3:1": "ASPECT_3_1",
-                        "2:1": "ASPECT_2_1",
-                        "16:9": "ASPECT_16_9",
-                        "16:10": "ASPECT_16_10",
-                        "3:2": "ASPECT_3_2",
-                        "4:3": "ASPECT_4_3",
-                        "5:4": "ASPECT_5_4",
-                    }
+                    st.session_state.selected_ratio_api = const.aspect_ratio_mapping.get(st.session_state.selected_ratio)
 
-                    selected_ratio_api = aspect_ratio_mapping.get(st.session_state.selected_ratio)
-                    print(st.session_state.selected_palette)
-                    if not selected_ratio_api:
+                    if not st.session_state.selected_ratio_api:
                         st.error("Selected aspect ratio is not supported.")
                         raise ValueError("Invalid aspect ratio.")
 
                     # Call the generate_with_ideogram function
-                    ideogram_image, image_info = generate_with_ideogram(
+                    ideogram_image, seed, returned_prompt = generate_with_ideogram(
                         ideogram_prompt,
-                        selected_ratio_api,
+                        st.session_state.selected_ratio_api,
                         st.session_state.selected_style,
                         st.session_state.selected_palette
                     )
 
-                    # Convert PIL image to bytes
+                    # Store the generated ideogram in session state
+                    st.session_state.ideogram_image = ideogram_image
+                    st.session_state.seed = seed
+                    st.session_state.returned_prompt = returned_prompt
+                    print(st.session_state.seed)
+
+                    st.session_state.modified_image = None  # Reset the modified image
+
+                    # Convert PIL image to bytes for download
                     buffered = BytesIO()
                     ideogram_image.save(buffered, format="PNG")
                     image_bytes = buffered.getvalue()
@@ -348,3 +349,45 @@ elif service_choice == "Generate with Ideogram":
                         st.error("Could not download the ideogram image.")
                 except ValueError as e:
                     st.error(f"Error: {str(e)}")
+
+        # Display the original ideogram (always)
+        if st.session_state.ideogram_image is not None:
+            # Add a section for modifying the image
+            st.subheader("Modify Your Image")
+            
+            # Text area to specify modification details
+            modification_prompt = st.text_area("Describe the modification you want (e.g., 'increase brightness', 'add a filter'):")
+
+            # The "Modify Image" button is always there
+            if st.button("Modify Image"):
+                with st.spinner("Modifying your image..."):
+                    print(st.session_state.seed)
+
+                    try:
+                        modification_prompt = modify_prompt(st.session_state.returned_prompt,modification_prompt)
+                        print(modification_prompt)
+                        # Modify the original image based on the user's input
+                        st.session_state.ideogram_image,new_seed,returned_prompt =generate_with_ideogram(
+                        modification_prompt,
+                        st.session_state.selected_ratio_api,
+                        st.session_state.selected_style,
+                        st.session_state.selected_palette,
+                        seed=st.session_state.seed)
+                        
+                        # Convert the modified image to bytes for downloading
+                        buffered_modified = BytesIO()
+                        st.session_state.ideogram_image.save(buffered_modified, format="PNG")
+                        modified_image_bytes = buffered_modified.getvalue()
+
+                        # Display the modified image in the same place (overwrites the original display)
+                        st.image(st.session_state.ideogram_image, caption="Modified Ideogram", use_column_width=True)
+                        
+                        # Download button for the modified image
+                        st.download_button(
+                            label="Download Modified Image",
+                            data=modified_image_bytes,
+                            file_name="modified_ideogram.png",
+                            mime="image/png"
+                        )
+                    except Exception as e:
+                        st.error(f"Error: {str(e)}")

@@ -53,6 +53,7 @@ PROTRAIT_RATIOS = {
     "2:3": (2, 3),
     "3:4": (3, 4),
     "10:16": (10, 16),
+    "1:1": (1, 1)
 }
 
 LANDSCAPE_RATIOS = {
@@ -66,7 +67,7 @@ LANDSCAPE_RATIOS = {
 
 # Define the styles and color palettes
 styles = ["Auto", "General", "Realistic", "Design", "Render_3d", "Anime"]
-palettes = ["Ember", "Fresh", "Jungle", "Magic", "Mosaic", "Pastel", "Ultramarine"]
+palettes = ["None","Ember", "Fresh", "Jungle", "Magic", "Mosaic", "Pastel", "Ultramarine"]
 
 # Define color swatches for each palette with 5 colors
 palette_colors = {
@@ -78,3 +79,21 @@ palette_colors = {
     "Pastel": ["#FFB6C1", "#FFDAB9", "#E6E6FA", "#B0E0E6", "#FFFACD"],
     "Ultramarine": ["#4169E1", "#0000CD", "#000080", "#4682B4", "#5F9EA0"],
 }
+
+aspect_ratio_mapping = {
+                        "1:3": "ASPECT_1_3",
+                        "1:2": "ASPECT_1_2",
+                        "9:16": "ASPECT_9_16",
+                        "10:16": "ASPECT_10_16",
+                        "2:3": "ASPECT_2_3",
+                        "3:4": "ASPECT_3_4",
+                        "4:5": "ASPECT_4_5",
+                        "3:1": "ASPECT_3_1",
+                        "2:1": "ASPECT_2_1",
+                        "16:9": "ASPECT_16_9",
+                        "16:10": "ASPECT_16_10",
+                        "3:2": "ASPECT_3_2",
+                        "4:3": "ASPECT_4_3",
+                        "5:4": "ASPECT_5_4",
+                        "1:1": "ASPECT_1_1",
+                    }
