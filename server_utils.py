@@ -327,3 +327,18 @@ def modify_prompt(prompt,modification_prompt):
     cleaned_response = response.split('"', 1)[1].rsplit('"', 1)[0]
     print(cleaned_response)
     return response
+
+
+def describe_image(image_bytes):
+    url = "https://api.ideogram.ai/describe"
+    files = {"image_file": image_bytes}
+    headers = {"Api-Key":  st.secrets["IDEOGRAM_API_KEY"]}
+
+    response = requests.post(url, files=files, headers=headers)
+
+    if response.status_code == 200:
+        print(response.json())
+        description = response.json().get('descriptions', 'No description found')[0]["text"]
+        return description
+    else:
+        raise ValueError(f"Failed to generate image description: {response.status_code}")

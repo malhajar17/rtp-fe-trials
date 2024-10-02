@@ -27,7 +27,7 @@ st.sidebar.title("Image Processing Controls")
 uploaded_file = st.sidebar.file_uploader("Choose an image...", ["jpg", "png", "jpeg"])
 
 # Select service: Upscale or Resize with Bleed
-service_choice = st.sidebar.radio("Choose a service", ["Upscale Image", "Resize with Bleed", "Remove Background", "Generate Flyer","Generate with Ideogram"])
+service_choice = st.sidebar.radio("Choose a service", ["Upscale Image", "Resize with Bleed", "Remove Background", "Generate Flyer","Generate with YourDesigner","Describe Image with YourDesigner"])
 
 if service_choice == "Upscale Image":
     upscale_factor = st.sidebar.slider("Upscale Factor", const.MIN_UPSCALE_FACTOR, const.MAX_UPSCALE_FACTOR, const.DEFAULT_UPSCALE_FACTOR)
@@ -202,7 +202,7 @@ elif service_choice == "Generate Flyer":
                 except ValueError as e:
                     st.error(f"Error: {str(e)}")
 
-elif service_choice == "Generate with Ideogram":
+elif service_choice == "Generate with YourDesigner":
 
     # Initialize session state variables
     if 'selected_ratio' not in st.session_state:
@@ -217,8 +217,8 @@ elif service_choice == "Generate with Ideogram":
         st.session_state.selected_style = 'AUTO'
     if 'selected_palette' not in st.session_state:
         st.session_state.selected_palette = None
-    if 'ideogram_image' not in st.session_state:
-        st.session_state.ideogram_image = None  # Store the generated ideogram
+    if 'YourDesigner_image' not in st.session_state:
+        st.session_state.YourDesigner_image = None  # Store the generated YourDesigner
     if 'modified_image' not in st.session_state:
         st.session_state.modified_image = None  # Store the modified image
     if 'seed' not in st.session_state:
@@ -240,7 +240,7 @@ elif service_choice == "Generate with Ideogram":
         else:
             st.write("Ratio not found")  # Debugging statement
 
-    st.title("Generate with Ideogram")
+    st.title("Generate with YourDesigner")
 
     # Create columns for layout
     col1, col2, col3 = st.columns([1, 1, 3])
@@ -301,13 +301,13 @@ elif service_choice == "Generate with Ideogram":
     # Update selected palette in session state
     st.session_state.selected_palette = palette_choice
 
-    # Prompting user to generate ideogram
-    ideogram_prompt = st.text_area("Enter your ideogram prompt here:", "Your ideogram content goes here.")
+    # Prompting user to generate YourDesigner
+    YourDesigner_prompt = st.text_area("Enter your YourDesigner prompt here:", "Your YourDesigner content goes here.")
 
     # Check if the ratio and prompt are selected
-    if st.session_state.selected_ratio and ideogram_prompt:
-        if st.button("Generate Ideogram"):
-            with st.spinner("Generating your ideogram..."):
+    if st.session_state.selected_ratio and YourDesigner_prompt:
+        if st.button("Generate YourDesigner"):
+            with st.spinner("Generating your YourDesigner..."):
                 try:
                     st.session_state.selected_ratio_api = const.aspect_ratio_mapping.get(st.session_state.selected_ratio)
 
@@ -315,16 +315,16 @@ elif service_choice == "Generate with Ideogram":
                         st.error("Selected aspect ratio is not supported.")
                         raise ValueError("Invalid aspect ratio.")
 
-                    # Call the generate_with_ideogram function
-                    ideogram_image, seed, returned_prompt = generate_with_ideogram(
-                        ideogram_prompt,
+                    # Call the generate_with_YourDesigner function
+                    YourDesigner_image, seed, returned_prompt = generate_with_YourDesigner(
+                        YourDesigner_prompt,
                         st.session_state.selected_ratio_api,
                         st.session_state.selected_style,
                         st.session_state.selected_palette
                     )
 
-                    # Store the generated ideogram in session state
-                    st.session_state.ideogram_image = ideogram_image
+                    # Store the generated YourDesigner in session state
+                    st.session_state.YourDesigner_image = YourDesigner_image
                     st.session_state.seed = seed
                     st.session_state.returned_prompt = returned_prompt
                     print(st.session_state.seed)
@@ -333,25 +333,25 @@ elif service_choice == "Generate with Ideogram":
 
                     # Convert PIL image to bytes for download
                     buffered = BytesIO()
-                    ideogram_image.save(buffered, format="PNG")
+                    YourDesigner_image.save(buffered, format="PNG")
                     image_bytes = buffered.getvalue()
 
-                    if ideogram_image:
-                        st.success("Ideogram generated successfully!")
-                        st.image(ideogram_image, caption="Generated Ideogram", use_column_width=True)
+                    if YourDesigner_image:
+                        st.success("YourDesigner generated successfully!")
+                        st.image(YourDesigner_image, caption="Generated YourDesigner", use_column_width=True)
                         st.download_button(
-                            label="Download Ideogram",
+                            label="Download YourDesigner",
                             data=image_bytes,
-                            file_name="ideogram.png",
+                            file_name="YourDesigner.png",
                             mime="image/png"
                         )
                     else:
-                        st.error("Could not download the ideogram image.")
+                        st.error("Could not download the YourDesigner image.")
                 except ValueError as e:
                     st.error(f"Error: {str(e)}")
 
-        # Display the original ideogram (always)
-        if st.session_state.ideogram_image is not None:
+        # Display the original YourDesigner (always)
+        if st.session_state.YourDesigner_image is not None:
             # Add a section for modifying the image
             st.subheader("Modify Your Image")
             
@@ -367,7 +367,7 @@ elif service_choice == "Generate with Ideogram":
                         modification_prompt = modify_prompt(st.session_state.returned_prompt,modification_prompt)
                         print(modification_prompt)
                         # Modify the original image based on the user's input
-                        st.session_state.ideogram_image,new_seed,returned_prompt =generate_with_ideogram(
+                        st.session_state.YourDesigner_image,new_seed,returned_prompt =generate_with_YourDesigner(
                         modification_prompt,
                         st.session_state.selected_ratio_api,
                         st.session_state.selected_style,
@@ -376,18 +376,36 @@ elif service_choice == "Generate with Ideogram":
                         
                         # Convert the modified image to bytes for downloading
                         buffered_modified = BytesIO()
-                        st.session_state.ideogram_image.save(buffered_modified, format="PNG")
+                        st.session_state.YourDesigner_image.save(buffered_modified, format="PNG")
                         modified_image_bytes = buffered_modified.getvalue()
 
                         # Display the modified image in the same place (overwrites the original display)
-                        st.image(st.session_state.ideogram_image, caption="Modified Ideogram", use_column_width=True)
+                        st.image(st.session_state.YourDesigner_image, caption="Modified YourDesigner", use_column_width=True)
                         
                         # Download button for the modified image
                         st.download_button(
                             label="Download Modified Image",
                             data=modified_image_bytes,
-                            file_name="modified_ideogram.png",
+                            file_name="modified_YourDesigner.png",
                             mime="image/png"
                         )
                     except Exception as e:
                         st.error(f"Error: {str(e)}")
+
+elif service_choice == "Describe Image with YourDesigner":
+    st.title("Image Description")
+    st.subheader("Upload an image, and the app will generate a description for the image.")
+
+    if uploaded_file is not None:
+        st.image(uploaded_file, caption="Uploaded Image", use_column_width=True)
+        img_bytes = uploaded_file.read()
+
+        if st.sidebar.button("Generate Description"):
+            with st.spinner("Generating description..."):
+                try:
+                    # Call a function or API that returns a description for the image
+                    description = describe_image(img_bytes)  
+                    st.success("Description generated successfully!")
+                    st.write(f"**Description:** {description}")
+                except ValueError as e:
+                    st.error(f"Error: {str(e)}")
