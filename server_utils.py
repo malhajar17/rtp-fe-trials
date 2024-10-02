@@ -9,6 +9,7 @@ import runpod
 import base64
 from utils import *
 from openai import OpenAI
+import json
 
 runpod.api_key = os.environ.get("RUNPOD_API_KEY")
 
@@ -222,7 +223,7 @@ def generate_flyer_image(prompt):
         raise ValueError("Output does not contain a valid image URL")
     
 
-def generate_with_ideogram(prompt, aspect_ratio, style, color_palette,seed=-1,magic_prompt_option="AUTO"):
+def generate_with_YourDesigner(prompt, aspect_ratio, style, color_palette,seed=-1,magic_prompt_option="AUTO"):
 
     url = "https://api.ideogram.ai/generate"
     
@@ -342,3 +343,74 @@ def describe_image(image_bytes):
         return description
     else:
         raise ValueError(f"Failed to generate image description: {response.status_code}")
+
+
+
+def remix_image(image_file_path, prompt, aspect_ratio, style, color_palette, image_weight, api_key):
+    url = "https://api.ideogram.ai/remix"
+
+    # Open the image file directly
+    with open(image_file_path, 'rb') as image_file:
+        files = {
+            'image_file': ('image_file_path', image_file, 'image/png'),  # Use the actual file name and MIME type
+        }
+
+        # Prepare the payload inside the 'image_request' wrapper
+        payload = {
+            "prompt": prompt,
+            "aspect_ratio": aspect_ratio,  # Use the correct aspect ratio format
+            "model": "V_2",
+            "magic_prompt_option": "ON",
+            "style": style,
+            "image_weight": image_weight,
+            "color_palette": {
+                "name": color_palette.upper()
+            }
+        }
+        if color_palette == "None":
+            del payload["color_palette"]
+        # Prepare the form-data
+        data = {
+            "image_request": json.dumps(payload)  # The payload must be serialized as a string
+        }
+
+        headers = {
+            "Api-Key": api_key  # No need to specify Content-Type when sending files
+        }
+
+        # Send the POST request to the remix API
+        response = requests.post(url, data=data, files=files, headers=headers)
+
+        if response.status_code != 200:
+            raise ValueError(f"API request failed with status code {response.status_code}: {response.text}")
+
+        response_json = response.json()
+
+        # Check if the response contains the 'data' field
+        if 'data' not in response_json or not response_json['data']:
+            raise ValueError("No image data found in the response.")
+
+        remixed_images = []
+        
+        # Iterate through the returned images
+        for image_info in response_json['data']:
+            image_url = image_info['url']
+
+            # Download each image
+            image_response = requests.get(image_url)
+            if image_response.status_code != 200:
+                raise ValueError(f"Failed to download image from {image_url}")
+
+            image = Image.open(BytesIO(image_response.content))
+
+            # Append each image, along with its seed, prompt, and resolution to the list
+            remixed_images.append({
+                "image": image,
+                "seed": image_info['seed'],
+                "prompt": image_info['prompt'],
+                "resolution": image_info['resolution'],
+                "url": image_url
+            })
+
+        # Return the list of remixed images
+        return remixed_images
