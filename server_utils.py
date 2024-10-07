@@ -326,7 +326,7 @@ def modify_prompt(prompt,modification_prompt):
     response = completion.choices[0].message.content
         # Split the string by double quotes and take the part in between the first and last quotes
     #cleaned_response = response.split('"', 1)[1].rsplit('"', 1)[0]
-    print(cleaned_response)
+    print(response)
     return response
 
 
