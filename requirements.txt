@@ -5,3 +5,6 @@ runpod
 boto3
 fpdf
 openai
+streamlit-authenticator
+bcrypt 
+PyYAML

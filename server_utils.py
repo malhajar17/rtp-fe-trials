@@ -325,8 +325,14 @@ def modify_prompt(prompt,modification_prompt):
     )
     response = completion.choices[0].message.content
         # Split the string by double quotes and take the part in between the first and last quotes
+<<<<<<< HEAD
     #cleaned_response = response.split('"', 1)[1].rsplit('"', 1)[0]
     print(response)
+=======
+    print(response)
+    #cleaned_response = response.split('"', 1)[1].rsplit('"', 1)[0]
+    #print(cleaned_response)
+>>>>>>> 3b71c4f (added authentication)
     return response
 
 
