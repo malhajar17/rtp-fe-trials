@@ -437,7 +437,7 @@ def reimagine_image(image_bytes, selected_ratio, selected_style, selected_palett
                     "content": [
                         {
                             "type": "text",
-                            "text": "Describe this image for me as one paragraph. I want to give it as a prompt to a diffusion model."
+                            "text": "Describe this image for me as one paragraph (Make sure you preserve the text as it is). I want to give it as a prompt to a diffusion model."
                         },
                         {
                             "type": "image_url",
