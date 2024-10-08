@@ -10,6 +10,7 @@ import base64
 from utils import *
 from openai import OpenAI
 import json
+import constants as const 
 
 runpod.api_key = os.environ.get("RUNPOD_API_KEY")
 
@@ -343,8 +344,6 @@ def describe_image(image_bytes):
     else:
         raise ValueError(f"Failed to generate image description: {response.status_code}")
 
-
-
 def remix_image(image_file_path, prompt, aspect_ratio, style, color_palette, image_weight, api_key):
     url = "https://api.ideogram.ai/remix"
 
@@ -413,3 +412,74 @@ def remix_image(image_file_path, prompt, aspect_ratio, style, color_palette, ima
 
         # Return the list of remixed images
         return remixed_images
+
+import base64
+import requests
+import os
+import streamlit as st
+
+def reimagine_image(image_bytes, selected_ratio, selected_style, selected_palette):
+    try:
+        # Step 1: Encode the image as base64
+        base64_image = base64.b64encode(image_bytes).decode('utf-8')
+
+        # Prepare the payload to send the base64 image directly
+        headers = {
+            "Content-Type": "application/json",
+            "Authorization": f"Bearer {os.environ.get('OPENAI_API_KEY')}"
+        }
+
+        payload = {
+            "model": "gpt-4o",
+            "messages": [
+                {
+                    "role": "user",
+                    "content": [
+                        {
+                            "type": "text",
+                            "text": "Describe this image for me as one paragraph. I want to give it as a prompt to a diffusion model."
+                        },
+                        {
+                            "type": "image_url",
+                            "image_url": {
+                                "url": f"data:image/jpeg;base64,{base64_image}"
+                            }
+                        }
+                    ]
+                }
+            ],
+            "max_tokens": 1000,
+            "temperature": 0.2
+        }
+
+        # Make the request to OpenAI API
+        response = requests.post("https://api.openai.com/v1/chat/completions", headers=headers, json=payload)
+
+        if response.status_code != 200:
+            st.error(f"Failed to get a response from GPT-4o: {response.text}")
+            return None, None, None
+
+        # Extract the refined prompt from the response
+        refined_prompt = response.json()["choices"][0]["message"]["content"]
+        st.write(f"Refined prompt for diffusion model: {refined_prompt}")
+
+    except Exception as e:
+        st.error(f"Failed to generate prompt with GPT-4o: {str(e)}")
+        return None, None, None
+
+    # Step 2: Generate an image with YourDesigner using the refined prompt
+    try:
+        # Use the selected aspect ratio, style, and color palette provided in the UI
+        reimagined_image, seed, returned_prompt = generate_with_YourDesigner(
+            refined_prompt,
+            selected_ratio,  # Map the selected ratio to the appropriate API format
+            selected_style,
+            selected_palette
+        )
+
+        # Return the reimagined image, seed, and the refined prompt for future use
+        return reimagined_image, seed, returned_prompt
+
+    except Exception as e:
+        st.error(f"Failed to generate reimagined image: {str(e)}")
+        return None, None, None
