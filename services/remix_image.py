@@ -2,8 +2,6 @@
 
 import streamlit as st
 import constants as const
-from PIL import Image
-from io import BytesIO
 from utils.server_utils import remix_image
 import requests
 

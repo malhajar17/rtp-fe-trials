@@ -4,10 +4,14 @@ cookie:
   name: sample_cookie_name
 credentials:
   usernames:
+    Mohamad Alhajar:
+      email: malhajar@example.com
+      name: Mohamad Alhajar
+      password: $2b$12$BV2pemNqS//6apCr1EdpWufoCWiPF.yh2aWzSGpksORuErn7X/LR.
     malhajae:
       email: sadada
       name: adasda
-      password: '123456'
+      password: $2b$12$Y2usY3t5Rc8td81hGhr.TOWxgwXBmLSooaFxp.dGrLh6HK6RQKDYi
     malhajar:
       email: malhajar@example.com
       name: mohamad
@@ -24,10 +28,6 @@ credentials:
       email: sads
       name: sada
       password: $2b$12$t1pKDQjwQ4a9zSwtomZoz.B04j3eFqnaX0X0j6rfAU7WkAbfBIYOu
-    mo:
-      email: malhajar@example.com
-      name: mo
-      password: $2b$12$BV2pemNqS//6apCr1EdpWufoCWiPF.yh2aWzSGpksORuErn7X/LR.
     mohamad:
       email: sadasd
       name: asdasd

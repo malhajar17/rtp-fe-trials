@@ -1,3 +1,4 @@
+# app.py
 import streamlit as st
 import os
 import base64
@@ -18,6 +19,9 @@ from services import (
     remix_image,
     reimagine_with_modification,
 )
+
+# Import the ProfileUI class from profile_element.py
+from ui_elements.profile_element import ProfileUI
 
 # Streamlit page configuration
 st.set_page_config(
@@ -75,54 +79,23 @@ else:
     st.session_state['username'] = name
     username = name
 
-    # Load or set a default profile picture
-    profile_pic_path = f"profile_pics/{username}.png"
-    if os.path.exists(profile_pic_path):
-        profile_pic = Image.open(profile_pic_path)
-    else:
-        profile_pic = Image.open("default_profile_pic.png")
+    # Create an instance of ProfileUI
+    profile_ui = ProfileUI(username)
 
-    # Convert profile picture to base64
-    buffered = BytesIO()
-    profile_pic.save(buffered, format="PNG")
-    profile_pic_base64 = base64.b64encode(buffered.getvalue()).decode()
+    # Display the profile picture and username
+    profile_ui.display_profile()
 
-    # Display profile picture and username
-    st.sidebar.markdown(
-        f"""
-        <div style="text-align: center;">
-            <img src="data:image/png;base64,{profile_pic_base64}" width="80" style="border-radius: 50%;">
-            <h3 style="margin-bottom: 0;">{username}</h3>
-        </div>
-        """,
-        unsafe_allow_html=True
-    )
-
-    # Create buttons using Streamlit's button widgets
-    with st.sidebar:
-        st.markdown('<div class="sidebar-buttons">', unsafe_allow_html=True)
-        col1, col2 = st.columns(2)
-        with col1:
-            view_history_button = st.button("View History")
-        with col2:
-            edit_profile_button = st.button("Edit Profile")
-        st.markdown('</div>', unsafe_allow_html=True)
-
-    # Handle button clicks
-    if view_history_button:
-        # Your code to display user history goes here
-        st.write(f"Displaying {username}'s history.")
-    if edit_profile_button:
-        # Your code to edit the profile goes here
-        st.write(f"Editing {username}'s profile.")
+    # Display the buttons and handle clicks
+    view_history_button, edit_profile_button = profile_ui.display_buttons()
+    profile_ui.handle_button_clicks(view_history_button, edit_profile_button)
 
     # Sidebar for user inputs
     st.sidebar.title("Image Processing Controls")
 
     # Select service: Upscale or Resize with Bleed
     service_choice = st.sidebar.radio("Choose a service", [
-        "Upscale Image", "Resize with Bleed", "Remove Background", 
-        "Generate Flyer", "Generate with YourDesigner", 
+        "Upscale Image", "Resize with Bleed", "Remove Background",
+        "Generate Flyer", "Generate with YourDesigner",
         "Describe Image with YourDesigner", "Remix Image", "Reimagine with Modification"
     ])
 
