@@ -11,6 +11,10 @@ from utils import *
 from openai import OpenAI
 import json
 import constants as const 
+import base64
+import requests
+import os
+import streamlit as st
 
 runpod.api_key = os.environ.get("RUNPOD_API_KEY")
 
@@ -412,11 +416,6 @@ def remix_image(image_file_path, prompt, aspect_ratio, style, color_palette, ima
 
         # Return the list of remixed images
         return remixed_images
-
-import base64
-import requests
-import os
-import streamlit as st
 
 def reimagine_image(image_bytes, selected_ratio, selected_style, selected_palette):
     try:

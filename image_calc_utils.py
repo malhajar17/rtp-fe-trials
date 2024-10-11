@@ -2,7 +2,7 @@ from PIL import Image
 import streamlit as st
 import io
 import image_calc_utils as img_utils
-from server_utils import *
+from utils.server_utils import *
 
 def get_initial_dimensions(image_bytes):
     """
