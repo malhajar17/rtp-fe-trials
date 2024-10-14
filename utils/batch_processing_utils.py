@@ -11,6 +11,10 @@ import streamlit as st
 from datetime import datetime
 import boto3
 from utils import server_utils
+from utils.server_utils import reimagine_image
+import time
+from io import BytesIO
+from PIL import Image
 
 def initialize_s3_client():
     # Initialize the S3 client with your credentials
@@ -157,3 +161,108 @@ def process_csv_prompts(uploaded_csv, ratio_label, style, palette, username, gen
     }
 
     return history_entry, zip_buffer
+
+import zipfile
+import io
+import os
+from PIL import Image
+from utils.server_utils import reimagine_image
+import constants as const
+import pandas as pd
+import time
+import streamlit as st
+def process_zip_images(uploaded_zip, selected_ratio, selected_style, selected_palette, username, processing_type):
+    try:
+        # Read the uploaded zip file
+        zip_file = zipfile.ZipFile(uploaded_zip)
+        # Filter out unwanted files
+        image_files = [
+            f for f in zip_file.namelist()
+            if f.lower().endswith(('.png', '.jpg', '.jpeg', '.gif', '.webp'))
+            and not os.path.basename(f).startswith('._')  # Ignore files starting with ._
+            and '__MACOSX' not in f  # Ignore files inside __MACOSX directory
+            and not f.endswith('/')  # Ignore directories
+        ]
+
+        if not image_files:
+            st.error("No supported image files found in the ZIP archive.")
+            return None
+
+        images_dict = {}
+        mapping_dict = {}
+
+        for img_name in image_files:
+            # Read image data
+            img_data = zip_file.read(img_name)
+            # Check image size
+            if len(img_data) > 20 * 1024 * 1024:
+                # Image is larger than 20 MB
+                st.warning(f"Skipping image '{img_name}' because it exceeds 20 MB size limit.")
+                continue
+
+            # Open the image using PIL
+            try:
+                image = Image.open(BytesIO(img_data))
+                # Convert images to RGB mode
+                if image.mode != 'RGB':
+                    image = image.convert('RGB')
+            except Exception as e:
+                st.warning(f"Skipping image '{img_name}' because it could not be opened: {str(e)}")
+                continue
+
+            # Save image to bytes in a supported format (JPEG)
+            img_byte_arr = io.BytesIO()
+            image.save(img_byte_arr, format='JPEG')
+            img_bytes = img_byte_arr.getvalue()
+
+            # Get the API aspect ratio
+            selected_ratio_api = const.aspect_ratio_mapping.get(selected_ratio)
+            if not selected_ratio_api:
+                st.error(f"Selected aspect ratio '{selected_ratio}' is not supported.")
+                return None
+
+            # Call reimagine_image function
+            reimagined_image, seed, returned_prompt = reimagine_image(
+                img_bytes,
+                selected_ratio_api,
+                selected_style,
+                selected_palette
+            )
+
+            if reimagined_image is None:
+                st.warning(f"Failed to reimagine image '{img_name}'. Skipping.")
+                continue
+
+            # Ensure unique filenames to avoid overwriting
+            base_name = os.path.basename(img_name)
+            reimagined_filename = f"reimagined_{base_name}"
+
+            # Store the image in the dictionary
+            images_dict[reimagined_filename] = reimagined_image
+
+            # Store mapping information
+            mapping_dict[reimagined_filename] = {
+                'original_filename': img_name,
+                'reimagined_filename': reimagined_filename,
+                'seed': seed,
+                'prompt': returned_prompt,
+                'aspect_ratio': selected_ratio,
+                'style': selected_style,
+                'color_palette': selected_palette,
+                'username': username,
+                'processing_type': processing_type
+            }
+
+            # Sleep to prevent rate limiting (adjust as needed)
+            time.sleep(1)
+
+        if not images_dict:
+            st.error("No images were successfully reimagined.")
+            return None
+
+        # Return the images and mapping as a dictionary
+        return {'images': images_dict, 'mapping': mapping_dict}
+
+    except Exception as e:
+        st.error(f"An error occurred during batch processing: {str(e)}")
+        return None
