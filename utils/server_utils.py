@@ -11,10 +11,7 @@ from utils import *
 from openai import OpenAI
 import json
 import constants as const 
-import base64
-import requests
-import os
-import streamlit as st
+import boto3
 
 runpod.api_key = os.environ.get("RUNPOD_API_KEY")
 
@@ -80,7 +77,15 @@ def upscale_image(service_url, image_bytes, upscale_factor):
         return image, object_key
     else:
         raise ValueError("Output does not contain a valid image URL")
-    
+
+
+def image_from_s3(bucket, key):
+    s3_client = boto3.resource('s3')
+    bucket = s3_client.Bucket(bucket)
+    image = bucket.Object(key)
+    img_data = image.get().get('Body').read()
+    return Image.open(BytesIO(img_data))
+
 def download_image(s3_link):
     s3_response = requests.get(s3_link)
     
