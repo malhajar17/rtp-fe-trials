@@ -300,7 +300,7 @@ def generate_with_YourDesigner(prompt, aspect_ratio, style, color_palette,seed=-
 def modify_prompt(prompt,modification_prompt):
     client = OpenAI(
         api_key=os.environ.get("OPENAI_API_KEY"), 
-        organization='org-l0RJJNv3Mp77MpQPjZyMqubj'
+        organization='proj_8D2wa0LqfiytZqLyYYWkDVFj'
     )
     messages=[
             {"role": "system", "content": "You are a helpful assistant."},
