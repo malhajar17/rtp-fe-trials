@@ -25,7 +25,7 @@ from ui_elements.profile_element import ProfileUI
 
 # Streamlit page configuration
 st.set_page_config(
-    page_title="PrintOclock's YourDesigner",
+    page_title="legml's design platform",
     page_icon="🎨",
     layout="centered",
     initial_sidebar_state="expanded",
