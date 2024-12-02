@@ -55,7 +55,7 @@ name = st.session_state.get("name", "")
 if authentication_status != True:  # Only show login/sign-up if not authenticated
     st.markdown("""
         <div style="text-align: center; margin-bottom: 40px;">
-            <h1 class="project-title">PrintOclock's YourDesigner</h1>
+            <h1 class="project-title"> legml's Designer</h1>
             <h3 class="project-motto">Design Smartly</h3>
         </div>
     """, unsafe_allow_html=True)
